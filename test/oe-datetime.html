@@ -60,7 +60,7 @@
         expect(input.minute).to.equal(date.getMinutes());
         expect(input.dateValue).to.exist;
         expect(input.dateValue.getTime()).to.equal(utc);
-        expect(input.$.display.value).to.equal(baseUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
+        expect(input.$.display.value).to.equal(OEUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
       });
       test('setting undefined value clears date, hour and minute values', function () {
         var input = fixture('basic');
@@ -70,7 +70,7 @@
 
         input.value = date.toISOString();
         expect(input.dateValue).to.exist;
-        expect(input.$.display.value).to.equal(baseUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
+        expect(input.$.display.value).to.equal(OEUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
 
         input.value = null;
 

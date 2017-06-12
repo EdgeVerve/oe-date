@@ -187,7 +187,7 @@ An element to capture the date-time value.
       behaviors: [
         Polymer.IronFormElementBehavior,
         Polymer.PaperInputBehavior,
-        baseUtils.FieldBehavior
+        OEUtils.FieldBehavior
       ],
       _valueChanged: function (newValue, oldValue) { // eslint-disable-line no-unused-vars
         if (newValue && !(newValue instanceof Date)) {
@@ -271,7 +271,7 @@ An element to capture the date-time value.
         } else if (tuInput[tuInput.length - 1] === 'Y') {
           retDate = this._calcDate(mDate, tuInput, 'years');
         } else {
-          retDate = baseUtils.DateUtils.parse(tuInput);
+          retDate = OEUtils.DateUtils.parse(tuInput);
         }
 
         return retDate;
@@ -330,7 +330,7 @@ An element to capture the date-time value.
       _format: function (dateVal) {
         var retVal = '';
         if (dateVal) {
-          retVal = baseUtils.DateUtils.format(dateVal, this.format);
+          retVal = OEUtils.DateUtils.format(dateVal, this.format);
         }
         return retVal;
       },
