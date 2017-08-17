@@ -33,7 +33,7 @@ An input control to capture `date` data. `value` property exposes the selected d
 
     </style>
     <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]></oe-datepicker-dlg>
-    <oe-input id="display" label=[[label]] required=[[required]] disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
+    <oe-input id="display" label=[[label]] required=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
       invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
 
       <paper-button hidden$=[[hideIcon]] suffix class="date-button" tabindex="-1" on-tap="_showDatePicker">
@@ -96,7 +96,9 @@ An input control to capture `date` data. `value` property exposes the selected d
 
       },
       _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
-        this.$._picker.open();
+        if(!this.readonly && !this.disabled) {
+          this.$._picker.open();
+        }
       },
       _datePicked: function (e) { // eslint-disable-line no-unused-vars
         this.validate();
