@@ -60,7 +60,7 @@
       } else if (tuInput[tuInput.length - 1] === 'Y') {
         retDate = this._calcDate(mDate, tuInput, 'years');
       } else {
-        retDate = OEUtils.DateUtils.parse(tuInput);
+        retDate = OEUtils.DateUtils.parse(tuInput, this.format);
       }
 
       return retDate;

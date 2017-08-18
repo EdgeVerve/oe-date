@@ -37,6 +37,12 @@
     </template>
   </test-fixture>
 
+  <test-fixture id="MM_DD_YYYY">
+    <template>
+      <oe-date format="MM-DD-YYYY"></oe-date>
+    </template>
+  </test-fixture>
+
   <test-fixture id="29Jan2016-DD_MM_Y">
     <template>
       <oe-date init="29-Jan-2016" format="DD MM Y"></oe-date>
@@ -279,6 +285,19 @@
 
       //TODO Add test cases for absolute date being entered
 
+      test('format is considered for date parsing', function(){
+        var today = new Date();
+        var valueDate = new Date(Date.UTC(2017, 10, 23));
+
+        var input = fixture('MM_DD_YYYY');
+
+        input.$.display.set('value', '11-23-2017');
+        input.inputElement.fire('change');
+
+        expect(input.invalid).to.equal(false);
+        expect(input.errorMessage).to.be.not.ok;
+        assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
+      });
     });
 
     suite('validation', function () {
