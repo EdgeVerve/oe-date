@@ -8,7 +8,6 @@
 <link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
-<link rel="import" href="../paper-input/paper-input-behavior.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -159,7 +158,7 @@
     },
 
     behaviors: [
-      Polymer.PaperInputBehavior,
+      // Polymer.PaperInputBehavior,
       Polymer.IronValidatableBehavior
     ],
 
@@ -220,7 +219,7 @@
           this.hour = (this.txtAMPM === 'AM' ? 0 : 12);
           e.currentTarget.value = this._pad(newHour, 2);
         } else {
-          this.hour = newHour;
+          this.hour = (this.txtAMPM === 'AM' ? newHour : newHour+12) ;
           //don't change AM/PM
           e.currentTarget.value = this._pad(newHour, 2);
         }
