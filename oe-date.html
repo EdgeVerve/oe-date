@@ -7,9 +7,11 @@
 <link rel="import" href="../polymer/polymer.html">
 
 <link rel="import" href="../paper-input/paper-input-behavior.html">
+<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../oe-field-behavior/oe-field-behavior.html">
 <link rel="import" href="behaviors/oe-date-behavior.html">
 <link rel="import" href="../oe-input/oe-input.html">
+<link rel="import" href="../iron-dropdown/iron-dropdown.html">
 <link rel="import" href="oe-datepicker-dlg.html">
 
 <!--
@@ -31,15 +33,44 @@ An input control to capture `date` data. `value` property exposes the selected d
         display: block;
       }
 
+      .vertical {
+        @apply (--layout-vertical);
+      }
+
+      .filler {
+        @apply (--layout-flex);
+      }
+
+      .horizontal {
+        @apply (--layout-horizontal);
+      }
+      .dropdown-content{
+        background: #FFF;
+        min-height: 340px;
+        min-width: 300px;
+      }
     </style>
     <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]></oe-datepicker-dlg>
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
       invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
 
       <paper-button hidden$=[[hideIcon]] suffix class="date-button" tabindex="-1" on-tap="_showDatePicker">
-        <iron-icon icon="today"></iron-icon>
+        <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
       </paper-button>
     </oe-input>
+    <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
+      <paper-material tabindex="-1" class="dropdown-content" disabled$="[[disabled]]">
+        <div class="vertical">
+          <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+            max=[[max]] min=[[min]]></oe-datepicker>
+          <div class="horizontal">
+            <div class="filler"></div>
+            <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
+            <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+          </div>
+        </div>
+      </paper-material>
+    </iron-dropdown>
 
   </template>
 
@@ -59,6 +90,21 @@ An input control to capture `date` data. `value` property exposes the selected d
         hideIcon: {
           type: Boolean,
           value: false
+        },
+        /**
+         * Setting to true makes the datepicker open as a dropdown instead of a dialog
+         */
+        dropdownMode: {
+          type: Boolean,
+          value: false
+        },
+        verticalOffset: {
+          type: String,
+          value: 62
+        },
+        verticalAlign: {
+          type: String,
+          value: 'top'
         }
       },
       behaviors: [
@@ -69,14 +115,14 @@ An input control to capture `date` data. `value` property exposes the selected d
       listeners: {
         '_picker.oe-date-picked': '_datePicked'
       },
+     
       attached: function () {
-
         //if value is set instead of date-value, trigger parsing of init-value
         if (!this.value && this.init) {
           this.$.display.set('value', this.init);
           this.$.display.fire('change');
         }
-
+        this.set('expand',false);
         if (this.max) {
           var newDate = this._parseShorthand(this.max);
           if (newDate) {
@@ -97,13 +143,29 @@ An input control to capture `date` data. `value` property exposes the selected d
       },
       _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
         if(!this.readonly && !this.disabled) {
-          this.$._picker.open();
+          if(this.dropdownMode){
+            this.set('expand',!this.expand);
+            this.set('localValue',this.value);
+          }else{
+            this.$._picker.open();
+          }
         }
       },
       _datePicked: function (e) { // eslint-disable-line no-unused-vars
         this.validate();
       },
-
+      _computeIcon:function(dropdownMode){
+          return dropdownMode?"arrow-drop-down":"today";
+      },
+      _onOK: function () {
+        this.set('value', this.localValue);
+        this.fire('oe-date-picked', this.value);
+        this.set('expand',false);
+      },
+      _onCancel: function () {
+        this.set('localValue', this.value);
+        this.set('expand',false);
+      },
       /**
        * Returns a reference to the input element.
        */

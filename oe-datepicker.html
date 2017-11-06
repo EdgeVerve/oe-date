@@ -172,7 +172,7 @@
               <div class="day"></div>
             </template>
             <template is="dom-if" if="{{day.n}}">
-              <div on-tap="_pickDate" on-dblclick="_doubleClick" class$="{{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}"
+              <div on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}"
                 data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
                 <span>{{day.day}}</span>
               </div>
@@ -327,7 +327,7 @@
     _getDateClass: function (day, month, selected) {
       //selected.getDate-> check if selected is date object
 
-      var retClass = 'day';
+      var retClass = '';
       if (selected && selected.getDate && day.n == selected.getDate() && month.number == selected.getMonth() &&
         month.year == selected.getFullYear()) {
         retClass += ' selected';
