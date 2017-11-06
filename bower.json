@@ -16,7 +16,7 @@
     "oe-utils": "^1.0.0",
     "paper-button": "^1.0.15",
     "paper-dialog": "^1.1.0",
-    "oe-input": "^1.0.0"
+    "oe-input": "^1.1.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
