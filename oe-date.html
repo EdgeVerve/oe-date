@@ -7,7 +7,7 @@
 <link rel="import" href="../polymer/polymer.html">
 
 <link rel="import" href="../paper-input/paper-input-behavior.html">
-<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../oe-field-behavior/oe-field-behavior.html">
 <link rel="import" href="behaviors/oe-date-behavior.html">
 <link rel="import" href="../oe-input/oe-input.html">
@@ -34,6 +34,7 @@ An input control to capture `date` data. `value` property exposes the selected d
       }
 
       .vertical {
+        height: 100%;
         @apply (--layout-vertical);
       }
 
@@ -43,9 +44,9 @@ An input control to capture `date` data. `value` property exposes the selected d
 
       .horizontal {
         @apply (--layout-horizontal);
+        height: 46px;
       }
       .dropdown-content{
-        background: #FFF;
         min-height: 340px;
         min-width: 300px;
       }
@@ -59,9 +60,9 @@ An input control to capture `date` data. `value` property exposes the selected d
       </paper-button>
     </oe-input>
     <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
-      <paper-material tabindex="-1" class="dropdown-content" disabled$="[[disabled]]">
-        <div class="vertical">
-          <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+      <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
+        <div class="vertical flex">
+          <oe-datepicker class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
             max=[[max]] min=[[min]]></oe-datepicker>
           <div class="horizontal">
             <div class="filler"></div>
@@ -69,7 +70,7 @@ An input control to capture `date` data. `value` property exposes the selected d
             <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
           </div>
         </div>
-      </paper-material>
+      </paper-card>
     </iron-dropdown>
 
   </template>
@@ -105,6 +106,14 @@ An input control to capture `date` data. `value` property exposes the selected d
         verticalAlign: {
           type: String,
           value: 'top'
+        },
+        /**
+         * Setting to true makes the datepicker open as a dropdown on focus of this element.
+         * This will work only if the oe-date component is in dropdown-mode.
+         */
+        openOnFocus:{
+          type: Boolean,
+          value: false
         }
       },
       behaviors: [
@@ -113,9 +122,16 @@ An input control to capture `date` data. `value` property exposes the selected d
         OEUtils.FieldBehavior
       ],
       listeners: {
-        '_picker.oe-date-picked': '_datePicked'
+        '_picker.oe-date-picked': '_datePicked',
+        'display.focus':'_focusHandle'
       },
-     
+      _focusHandle: function () { // eslint-disable-line no-unused-vars
+        if(this.openOnFocus && this.dropdownMode && !this.expand){
+          this.set('expand',true);
+          this.set('localValue',this.value || new Date());
+        }
+      },
+
       attached: function () {
         //if value is set instead of date-value, trigger parsing of init-value
         if (!this.value && this.init) {
@@ -123,6 +139,7 @@ An input control to capture `date` data. `value` property exposes the selected d
           this.$.display.fire('change');
         }
         this.set('expand',false);
+        this.set('localValue',new Date());
         if (this.max) {
           var newDate = this._parseShorthand(this.max);
           if (newDate) {
@@ -139,13 +156,15 @@ An input control to capture `date` data. `value` property exposes the selected d
             console.warn("Invalid 'min' date value", this.min);
           }
         }
-
+        if(!this.dropdownMode && this.openOnFocus){
+          console.warn("open-on-focus is only available in dropdown-mode.");
+        }
       },
       _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
         if(!this.readonly && !this.disabled) {
-          if(this.dropdownMode){
-            this.set('expand',!this.expand);
-            this.set('localValue',this.value);
+          if(this.dropdownMode && !this.expand){
+            this.set('expand',true);
+            this.set('localValue',this.value || new Date());
           }else{
             this.$._picker.open();
           }
