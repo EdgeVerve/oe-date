@@ -28,6 +28,7 @@
     },
     _formattingChanged: function (newFormat, oldFormat) { //eslint-disable-line no-unused-vars
       this.$.display.value = this._format(this.value);
+      this.validate();
     },
     _parseShorthand: function (input) {
 
@@ -132,10 +133,12 @@
 
       if ((newValue instanceof Date) && !isNaN(newValue.getTime())) {
         this.$.display.value = this._format(newValue);
+        this.validate();
       }
 
       if (newValue === undefined || newValue === null) {
         this.$.display.value = '';
+        this.validate();
       }
     },
     _displayChanged: function (evt) { //eslint-disable-line no-unused-vars
