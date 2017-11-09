@@ -62,7 +62,7 @@ An input control to capture `date` data. `value` property exposes the selected d
     <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
       <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
         <div class="vertical flex">
-          <oe-datepicker class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
             max=[[max]] min=[[min]]></oe-datepicker>
           <div class="horizontal">
             <div class="filler"></div>
@@ -123,12 +123,15 @@ An input control to capture `date` data. `value` property exposes the selected d
       ],
       listeners: {
         '_picker.oe-date-picked': '_datePicked',
-        'display.focus':'_focusHandle'
+        'display.focus':'_focusHandle',
+        'datePicker.selection-double-click':'_onOK'
       },
       _focusHandle: function () { // eslint-disable-line no-unused-vars
         if(this.openOnFocus && this.dropdownMode && !this.expand){
-          this.set('expand',true);
-          this.set('localValue',this.value || new Date());
+          Polymer.Base.async(function(){
+            this.set('expand',true);
+            this.set('localValue',this.value || new Date());
+          }.bind(this),100)
         }
       },
 
@@ -162,9 +165,11 @@ An input control to capture `date` data. `value` property exposes the selected d
       },
       _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
         if(!this.readonly && !this.disabled) {
-          if(this.dropdownMode && !this.expand){
-            this.set('expand',true);
-            this.set('localValue',this.value || new Date());
+          if(this.dropdownMode){
+            if(!this.expand){
+              this.set('expand',true);
+              this.set('localValue',this.value || new Date());
+            }
           }else{
             this.$._picker.open();
           }
