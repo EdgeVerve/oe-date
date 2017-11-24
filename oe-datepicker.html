@@ -391,18 +391,11 @@
       this.set('showing', 'year');
     },
     _nextDecade: function () {
-      var years = [];
-      for (var idx=0; idx<this.decadeYears.length; idx++) {
-        years.push(this.decadeYears[idx] + 10);
-      }
+      var years = this.decadeYears.map(function(v){return v+10;}); 
       this.set('decadeYears', years);
-
     },
     _prevDecade: function () {
-      var years = [];
-      for (var idx=0; idx<this.decadeYears.length; idx++) {
-        years.push(this.decadeYears[idx] - 10);
-      }
+      var years = this.decadeYears.map(function(v){return v-10;}); 
       this.set('decadeYears', years);
     },
     _showDecade: function () {
