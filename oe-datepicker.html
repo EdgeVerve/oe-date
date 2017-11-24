@@ -391,9 +391,8 @@
       this.set('showing', 'year');
     },
     _nextDecade: function () {
-
       var years = [];
-      for (var idx in this.decadeYears) {
+      for (var idx=0; idx<this.decadeYears.length; idx++) {
         years.push(this.decadeYears[idx] + 10);
       }
       this.set('decadeYears', years);
@@ -401,7 +400,7 @@
     },
     _prevDecade: function () {
       var years = [];
-      for (var idx in this.decadeYears) {
+      for (var idx=0; idx<this.decadeYears.length; idx++) {
         years.push(this.decadeYears[idx] - 10);
       }
       this.set('decadeYears', years);
