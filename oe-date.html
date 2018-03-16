@@ -114,6 +114,14 @@ An input control to capture `date` data. `value` property exposes the selected d
         openOnFocus:{
           type: Boolean,
           value: false
+        },
+        max: {
+          type: Object,
+          observer: '_maxChanged'
+        },
+        min: {
+          type: Object,
+          observer: '_minChanged'
         }
       },
       behaviors: [
@@ -143,7 +151,7 @@ An input control to capture `date` data. `value` property exposes the selected d
         }
         this.set('expand',false);
         this.set('localValue',new Date());
-        if (this.max) {
+        if (this.max && typeof this.max === 'string') {
           var newDate = this._parseShorthand(this.max);
           if (newDate) {
             this.set('max', newDate);
@@ -151,7 +159,7 @@ An input control to capture `date` data. `value` property exposes the selected d
             console.warn("Invalid 'max' date value", this.max);
           }
         }
-        if (this.min) {
+        if (this.min && typeof this.max === 'string') {
           var newDate = this._parseShorthand(this.min); // eslint-disable-line no-redeclare
           if (newDate) {
             this.set('min', newDate);
@@ -189,6 +197,28 @@ An input control to capture `date` data. `value` property exposes the selected d
       _onCancel: function () {
         this.set('localValue', this.value);
         this.set('expand',false);
+      },
+      _maxChanged: function(newMax){
+        if (newMax && typeof newMax === 'string') {
+          var newDate = this._parseShorthand(newMax);
+          if (newDate) {
+            this.set('max', newDate);
+            this.value && this.validate();
+          } else {
+            console.warn("Invalid 'max' date value", this.max);
+          }
+        }
+      },
+      _minChanged: function(newMin){
+        if (newMin && typeof newMin === 'string') {
+          var newDate = this._parseShorthand(newMin);
+          if (newDate) {
+            this.set('min', newDate);
+            this.value && this.validate();
+          } else {
+            console.warn("Invalid 'min' date value", this.max);
+          }
+        }
       },
       /**
        * Returns a reference to the input element.
