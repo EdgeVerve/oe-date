@@ -157,6 +157,8 @@
       } else {
         this.value = undefined;
         this.$.display.value = '';
+        /*Retain the original entered text*/
+        this.$.display.value = newstr;
       }
       this.validate();
     },
