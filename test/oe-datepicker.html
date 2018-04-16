@@ -73,7 +73,7 @@
         //}, 100);
       });
 
-      test('When showing months, Prev shows proe-month', function (done) {
+      test('When showing months, Prev shows prev-month', function (done) {
         var picker = fixture('basic');
         var today = new Date();
         var prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
@@ -128,7 +128,7 @@
         done();
       });
 
-      test('When showing years, Prev shows next-year', function (done) {
+      test('When showing years, Prev shows prev-year', function (done) {
         var picker = fixture('basic');
         forceXIfStamp(picker);
         var today = new Date();
