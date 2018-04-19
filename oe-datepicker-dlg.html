@@ -37,24 +37,23 @@ Raises event `oe-date-picked` when date is selected.
       }
 
       .vertical {
-        @apply (--layout-vertical);
+        @apply --layout-vertical;
       }
 
       .filler {
-        @apply (--layout-flex);
+        @apply --layout-flex;
       }
 
       .horizontal {
-        @apply (--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .header {
         background-color: var(--dpg-header-background);
         color: var(--dpg-header-text);
 
-        @apply (--layout-vertical);
-        @apply (--layout-center);
-        @apply (--layout-flex);
+        @apply --layout-vertical;
+        @apply --layout-center;
       }
 
       .dayOfWeekContainer {
@@ -84,7 +83,6 @@ Raises event `oe-date-picked` when date is selected.
         text-transform: none;
         padding: 0;
         font-size: 24px;
-        display: flex;
         align-items: center;
         justify-content: center;
         min-height: 24px;
@@ -103,28 +101,42 @@ Raises event `oe-date-picked` when date is selected.
         .header {
           display: none !important;
         }
+        #dialog {
+          min-width: 300px;
+        };
+      }
+
+      @media (min-width: 601px) {
+        
+          #dialog {
+            min-width: 435px;
+          };
       }
     </style>
 
 
     <paper-dialog id="dialog" on-iron-overlay-opened="patchOverlay">
-      <div class="container horizontal no-padding">
-        <div class="header">
-          <div class="dayOfWeekContainer" id="day">{{day}}</div>
-          <div class="dayOfMonthContainer" id="date" on-tap="_showMonth">
+      <div class="container layout horizontal no-padding">
+        <div class="header layout vertical">
+          <div class="dayOfWeekContainer" id="day"><span>{{day}}</span></div>
+          <div class="dayOfMonthContainer flex" id="date" on-tap="_showMonth">
             <paper-ripple></paper-ripple>
-            {{date}}
+            <span>{{date}}</span>
           </div>
-          <paper-button class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
-          <paper-button class="yearContainer" id="year" on-tap="_showDecade">{{year}}</paper-button>
+          <div class="layout vertical flex">
+            <paper-button class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
+            <paper-button class="yearContainer" id="year" on-tap="_showDecade">{{year}}</paper-button>
+          </div>
         </div>
-        <div class="vertical">
-          <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
-            max=[[max]] min=[[min]]></oe-datepicker>
-          <div class="horizontal">
-            <div class="filler"></div>
-            <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
-            <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+        <div class="layout flex">
+          <div class="layout vertical flex">
+            <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+              max=[[max]] min=[[min]]></oe-datepicker>
+            <div class="layout horizontal">
+              <div class="filler"></div>
+              <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
+              <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+            </div>
           </div>
         </div>
       </div>
