@@ -232,12 +232,18 @@
       /**
        * Maximum selectable date
        */
-      max: Date,
+      max: {
+        type:Date,
+        observer:'_renderCurrentMonth'
+      },
 
       /**
        * Minimum selectable date
        */
-      min: Date
+      min: {
+        type:Date,
+        observer:'_renderCurrentMonth'
+      }
 
     },
     _valueChanged: function () {
@@ -502,6 +508,9 @@
       }
 
       //this.prepareMonth(this.value.getMonth(), this.value.getFullYear());
+    },
+    _renderCurrentMonth:function(){
+      this.prepareMonth(this._activeMonth, this._activeYear);
     }
   });
 
