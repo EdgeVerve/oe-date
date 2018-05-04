@@ -141,12 +141,12 @@ An element to capture the date-time value.
           type: String
         },
 
-        /* Initial/default value for the control */
+        /* Minimum allowed value */
         min: {
           type: String
         },
 
-        /* Initial/default value for the control */
+        /* Maximum allowed value */
         max: {
           type: String
         },
@@ -286,7 +286,11 @@ An element to capture the date-time value.
         if (this.max) {
           var maxD = this._parseShorthand(this.max);
           if (maxD) {
-            this.set('max', new Date(Date.UTC(maxD.getFullYear(), maxD.getMonth(), maxD.getDate())));
+            /* _parseShorthand already returns a UTC date, don't trim the time part again 
+            as this will make calculated max/min western timezones (UTC -something)
+            to go 1 day off.
+            */
+            this.set('max', maxD/*new Date(Date.UTC(maxD.getFullYear(), maxD.getMonth(), maxD.getDate()))*/);
           } else {
             console.warn("Invalid 'max' date value", this.max);
           }
@@ -296,7 +300,11 @@ An element to capture the date-time value.
         if (this.min) {
           var minD = this._parseShorthand(this.min);
           if (minD) {
-            this.set('min', new Date(Date.UTC(minD.getFullYear(), minD.getMonth(), minD.getDate())));
+            /* _parseShorthand already returns a UTC date, don't trim the time part again 
+            as this will make calculated max/min western timezones (UTC -something)
+            to go 1 day off.
+            */
+            this.set('min', minD /*new Date(Date.UTC(minD.getFullYear(), minD.getMonth(), minD.getDate()))*/);
           } else {
             console.warn("Invalid 'min' date value", this.min);
           }
