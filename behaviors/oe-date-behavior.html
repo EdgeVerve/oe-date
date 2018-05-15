@@ -4,6 +4,7 @@
 -->
 <link rel="import" href="../../polymer/polymer.html">
 
+<script src="../../oe-utils/oe-utils.js"></script>
 <script src="../../oe-utils/date-utils.js"></script>
 <script>
   var OEUtils = OEUtils || {};
@@ -157,6 +158,8 @@
       } else {
         this.value = undefined;
         this.$.display.value = '';
+        /*Retain the original entered text*/
+        this.$.display.value = newstr;
       }
       this.validate();
     },

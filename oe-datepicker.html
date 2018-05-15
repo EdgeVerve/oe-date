@@ -232,12 +232,18 @@
       /**
        * Maximum selectable date
        */
-      max: Date,
+      max: {
+        type:Date,
+        observer:'_renderCurrentMonth'
+      },
 
       /**
        * Minimum selectable date
        */
-      min: Date
+      min: {
+        type:Date,
+        observer:'_renderCurrentMonth'
+      }
 
     },
     _valueChanged: function () {
@@ -299,13 +305,16 @@
       }
     },
     getDetails: function (dValue) {
-      if (!dValue) dValue = new Date();
+      if (!dValue){
+        dValue = new Date();
+        dValue = new Date(Date.UTC(dValue.getFullYear(), dValue.getMonth(), dValue.getDate(),0,0,0));
+      } 
       return {
         'value': dValue,
-        'day': this.intl.weekDayNamesLong ? this.intl.weekDayNamesLong[dValue.getDay()] : dValue.getDay(),
-        'date': dValue.getDate(),
-        'month': this.intl.monthNames ? this.intl.monthNames[dValue.getMonth()].name : dValue.getMonth(),
-        'year': dValue.getFullYear()
+        'day': this.intl.weekDayNamesLong ? this.intl.weekDayNamesLong[dValue.getUTCDay()] : dValue.getUTCDay(),
+        'date': dValue.getUTCDate(),
+        'month': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].name : dValue.getUTCMonth(),
+        'year': dValue.getUTCFullYear()
       }
     },
     _pickMonth: function (e) {
@@ -328,8 +337,8 @@
       //selected.getDate-> check if selected is date object
 
       var retClass = '';
-      if (selected && selected.getDate && day.n == selected.getDate() && month.number == selected.getMonth() &&
-        month.year == selected.getFullYear()) {
+      if (selected && selected.getUTCDate && day.n == selected.getUTCDate() && month.number == selected.getUTCMonth() &&
+        month.year == selected.getUTCFullYear()) {
         retClass += ' selected';
       }
       if (day.disabled) {
@@ -350,8 +359,8 @@
         number: curMonth,
         year: curYear
       };
-      var date = new Date(curYear, curMonth, 1);
-      var startPoint = (date.getDay() - this.startOfWeek + 7) % 7;
+      var date = new Date(Date.UTC(curYear, curMonth, 1));
+      var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
 
       month.name = this.intl.month_name_year(date);
       date = new Date(curYear, curMonth + 1, 0);
@@ -435,19 +444,22 @@
     _createIntlSettings: function (locale) {
       var intl = {};
       intl.day = Intl.DateTimeFormat(locale, {
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'UTC'
       }).format;
       intl.month_name_year = Intl.DateTimeFormat(locale, {
         month: 'long',
-        year: 'numeric'
+        year: 'numeric',
+        timeZone: 'UTC'
       }).format;
 
       // collect 3-char weekday names in _weekDayNames array
       var weekDayNames = [];
       for (var i = -1; i < 6; i++) {
-        var date = new Date(2000, 1, i, 0, 0, 0);
+        var date = new Date(Date.UTC(2000, 1, i, 0, 0, 0));
         weekDayNames.push(Intl.DateTimeFormat(locale, {
-          weekday: 'narrow'
+          weekday: 'narrow',
+          timeZone: 'UTC'
         }).format(date));
       }
       intl.weekDayNames = weekDayNames;
@@ -458,7 +470,8 @@
       for (var i = -1; i < 6; i++) { // eslint-disable-line no-redeclare
         var date = new Date(2000, 1, i, 0, 0, 0); // eslint-disable-line no-redeclare
         weekDayNamesLong.push(Intl.DateTimeFormat(locale, {
-          weekday: 'long'
+          weekday: 'long',
+          timeZone: 'UTC'
         }).format(date));
       }
 
@@ -469,17 +482,19 @@
       var monthNamesLong = [];
       var monthNames = [];
       for (var i = 0; i < 12; i++) { // eslint-disable-line no-redeclare
-        var date = new Date(2000, i, 1, 0, 0, 0); // eslint-disable-line no-redeclare
+        var date = new Date(Date.UTC(2000, i, 1, 0, 0, 0)); // eslint-disable-line no-redeclare
         monthNames.push({
           name: Intl.DateTimeFormat(this.locale, {
-            month: 'short'
+            month: 'short',
+            timeZone: 'UTC'
           }).format(date),
           n: i
         });
 
         monthNamesLong.push(
           Intl.DateTimeFormat(this.locale, {
-            month: 'long'
+            month: 'long',
+            timeZone: 'UTC'
           }).format(date));
       }
       intl.monthNames = monthNames;
@@ -502,6 +517,9 @@
       }
 
       //this.prepareMonth(this.value.getMonth(), this.value.getFullYear());
+    },
+    _renderCurrentMonth:function(){
+      this.prepareMonth(this._activeMonth, this._activeYear);
     }
   });
 
