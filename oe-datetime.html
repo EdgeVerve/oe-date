@@ -83,7 +83,7 @@ An element to capture the date-time value.
       }
     </style>
     <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]]></oe-datepicker-dlg>
-    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
+    <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
       auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
       <content select="[prefix]"></content>
       <label hidden$="[[!label]]">
@@ -311,7 +311,7 @@ An element to capture the date-time value.
         }
       },
       _formattingChanged: function (newFormat, oldFormat) { // eslint-disable-line no-unused-vars
-        this.$.display.value = this._format(this.dateValue);
+        this.$.display.set('value',this._format(this.dateValue));
       },
       _parseShorthand: function (input) {
 
@@ -415,14 +415,15 @@ An element to capture the date-time value.
         }
 
         if ((newValue instanceof Date) && !isNaN(newValue.getTime())) {
-          this.$.display.value = this._format(newValue);
+          this.$.display.set('value',this._format(newValue));
           this.validate();
         }
 
         if (newValue == undefined || newValue === null) {
-          this.$.display.value = '';
+          this.$.display.set('value','');
           this.validate();
         }
+        this.$.container._handleValue(this.$.display);
       },
       _displayChanged: function (e) { // eslint-disable-line no-unused-vars
         var newstr = this.$.display.value;
@@ -444,12 +445,13 @@ An element to capture the date-time value.
           }
 
           this.set('dateValue', newDate);
-          this.$.display.value = this._format(newDate);
+          this.$.display.set('value',this._format(newDate));
         } else {
           this.dateValue = undefined;
-          this.$.display.value = '';
+          this.$.display.set('value','');
         }
         this.validate();
+        this.$.container._handleValue(this.$.display);
       },
       _validate: function () {
         return true;
