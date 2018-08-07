@@ -9,6 +9,7 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
 <link rel="import" href="oe-datepicker.html">
+<link rel="import" href="../oe-i18n-msg/oe-i18n-msg.html">
 
 <!--
 Raises event `oe-date-picked` when date is selected.
@@ -134,8 +135,12 @@ Raises event `oe-date-picked` when date is selected.
               max=[[max]] min=[[min]]></oe-datepicker>
             <div class="layout horizontal">
               <div class="filler"></div>
-              <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
-              <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+              <paper-button id="cancelBtn" on-tap="_onCancel">
+                  <oe-i18n-msg msgid="cancel"></oe-i18n-msg>
+              </paper-button>
+              <paper-button id="okBtn" on-tap="_onOK">
+                  <oe-i18n-msg msgid="ok"></oe-i18n-msg>
+              </paper-button>
             </div>
           </div>
         </div>
