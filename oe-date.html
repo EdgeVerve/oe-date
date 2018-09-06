@@ -29,6 +29,10 @@ An input control to capture `date` data. `value` property exposes the selected d
         min-width: 0;
       }
 
+      .date-button:focus{
+        color: var(--paper-input-container-focus-color, --primary-color);
+      }
+
       :host {
         display: block;
       }
@@ -55,24 +59,23 @@ An input control to capture `date` data. `value` property exposes the selected d
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
       invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
 
-      <paper-button hidden$=[[hideIcon]] suffix class="date-button" tabindex="-1" on-tap="_showDatePicker">
+      <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] disabled=[[disabled]] suffix class="date-button" on-tap="_showDatePicker">
         <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
       </paper-button>
     </oe-input>
     <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
-      <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
-        <div class="vertical flex">
-          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
-            max=[[max]] min=[[min]]></oe-datepicker>
-          <div class="horizontal">
-            <div class="filler"></div>
-            <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
-            <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+        <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
+          <div class="vertical flex">
+            <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+              max=[[max]] min=[[min]]></oe-datepicker>
+            <div class="horizontal">
+              <div class="filler"></div>
+              <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
+              <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+            </div>
           </div>
-        </div>
-      </paper-card>
-    </iron-dropdown>
-
+        </paper-card>
+      </iron-dropdown>
   </template>
 
   <script>
@@ -122,14 +125,19 @@ An input control to capture `date` data. `value` property exposes the selected d
         min: {
           type: Object,
           observer: '_minChanged'
+        },
+        disabled: {
+          type: Boolean,
+          value: false
         }
       },
       behaviors: [
-        Polymer.PaperInputBehavior,
+        // Polymer.PaperInputBehavior,
         OEUtils.DateInputBehavior,
         OEUtils.FieldBehavior
       ],
       listeners: {
+        'focus': '_forwardFocus',
         '_picker.oe-date-picked': '_datePicked',
         'display.focus':'_focusHandle',
         'datePicker.selection-double-click':'_onOK'
@@ -142,7 +150,9 @@ An input control to capture `date` data. `value` property exposes the selected d
           }.bind(this),100)
         }
       },
-
+      _forwardFocus: function(e){
+        this.$.display.focus();
+      },
       attached: function () {
         //if value is set instead of date-value, trigger parsing of init-value
         if (!this.value && this.init) {

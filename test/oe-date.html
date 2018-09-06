@@ -644,7 +644,7 @@
           MockInteractions.focus(input);
           flush(function () {
             assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
-              document.activeElement, input._focusableElement);
+              document.activeElement, input.$.display.$.input);
             done();
           });
         });
