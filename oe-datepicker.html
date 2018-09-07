@@ -447,7 +447,8 @@
       if (this.disabled || ['Enter','ArrowLeft','ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
         return;
       }
-      var currentSelection = e.currentTarget.querySelector('div.day.selected');
+      var targetDiv = e.currentTarget;
+      var currentSelection = targetDiv.querySelector('div.day.selected');
       var data = currentSelection && currentSelection.dataset;
       if (data && data.date && data.month && data.year) {
         var day = parseInt(data.date);
@@ -491,10 +492,10 @@
         this.fire('selection-changed', this.getDetails(this.value));
         e.preventDefault();
       }
-      Polymer.Base.async(function(){
-      currentSelection = e.currentTarget.querySelector('div.day.selected');
-      currentSelection.focus();
-      });
+      //Polymer.Base.async(function(){
+      currentSelection = targetDiv.querySelector('div.day.selected');
+      currentSelection && currentSelection.focus();
+      //});
     },
     _settingsChanged: function(l, s, d) { // eslint-disable-line no-unused-vars
       if (!this.locale) return;

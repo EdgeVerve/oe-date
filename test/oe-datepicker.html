@@ -68,7 +68,6 @@
         done();
       });
 
-
       test('Disabled Days are disabled', function (done) {
         var element = fixture('weekends');
         element.set('value', '2018-05-08');
@@ -78,21 +77,20 @@
 
         var may4 = element.querySelector('.items-area .day[data-date="4"]');
         expect(may4.hasAttribute('disabled')).to.be.false;
-        expect(Array.from(may4.classList)).to.not.include('disabled');
+        expect(may4.className.split(' ')).to.not.include('disabled');
 
         var may5 = element.querySelector('.items-area .day[data-date="5"]');
         expect(may5.hasAttribute('disabled')).to.be.true;
-        expect(Array.from(may5.classList)).to.include('disabled');
+        expect(may5.className.split(' ')).to.include('disabled');
 
         var may6 = element.querySelector('.items-area .day[data-date="6"]');
         expect(may6.hasAttribute('disabled')).to.be.true;
-        expect(Array.from(may6.classList)).to.include('disabled');
+        expect(may6.className.split(' ')).to.include('disabled');
 
         var may7 = element.querySelector('.items-area .day[data-date="7"]');
         expect(may7.hasAttribute('disabled')).to.be.false;
-        expect(Array.from(may7.classList)).to.not.include('disabled');
-
-
+        expect(may7.className.split(' ')).to.not.include('disabled');
+        
         done();
       });
 
