@@ -89,6 +89,23 @@
         done();
       });
 
+      test('escape key closes the dialog box, value should not be set', function (done) {
+        var element = fixture('basic');
+        expect(element.$.dialog.opened).to.equal(false);
+
+        element.open();
+
+        expect(element.$.dialog.opened).to.equal(true);
+        expect(element.value).to.not.exist;
+
+        MockInteractions.keyDownOn(element.$.dialog, 27, [], 'Escape');
+
+        expect(element.$.dialog.opened).to.equal(false);
+        expect(element.value).to.not.exist;
+
+        done();
+      });
+
       test('okBtn, closes the dialog box, sets the value as  by default today', function (done) {
         var element = fixture('basic');
         expect(element.$.dialog.opened).to.equal(false);
