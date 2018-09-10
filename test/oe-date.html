@@ -119,7 +119,20 @@
         // Make this a primary input.
         buttons: 1 // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
       };
-      var e = new MouseEvent('dblclick', props);
+      var e = document.createEvent('MouseEvent');
+      e.initMouseEvent(
+        'dblclick', props.bubbles, props.cancelable,
+        null, /* view */
+        null, /* detail */
+        0,    /* screenX */
+        0,    /* screenY */
+        props.clientX, props.clientY,
+        false, /*ctrlKey */
+        false, /*altKey */
+        false, /*shiftKey */
+        false, /*metaKey */
+        0,     /*button */
+        null   /*relatedTarget*/);
       node.dispatchEvent(e);
     }
 
@@ -548,7 +561,7 @@
         assert.isUndefined(error.errorMessage, 'errorMessage is not defined');
       });
 
-      test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function () {
+      test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function (done) {
         var input = fixture('range_2d_3m');
 
         MockInteractions.focus(input.inputElement);
@@ -633,7 +646,7 @@
         assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
         assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
         assert.isUndefined(error.errorMessage, 'Boundary Case, errorMessage is not defined');
-
+        done();
       });
 
     });
