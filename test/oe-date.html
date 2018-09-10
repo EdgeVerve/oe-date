@@ -87,6 +87,11 @@
     </template>
   </test-fixture>
 
+  <test-fixture id="dropdownMode">
+      <template>
+        <oe-date dropdown-mode></oe-date>
+      </template>
+  </test-fixture>
 
   <test-fixture id="has-tabindex">
     <template>
@@ -103,6 +108,34 @@
       }
       return s;
     }
+
+    function makeDoubleClick(node) {
+      var xy = MockInteractions.middleOfNode(node);
+      var props = {
+        bubbles: true,
+        cancelable: true,
+        clientX: xy.x,
+        clientY: xy.y,
+        // Make this a primary input.
+        buttons: 1 // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+      };
+      var e = document.createEvent('MouseEvent');
+      e.initMouseEvent(
+        'dblclick', props.bubbles, props.cancelable,
+        null, /* view */
+        null, /* detail */
+        0,    /* screenX */
+        0,    /* screenY */
+        props.clientX, props.clientY,
+        false, /*ctrlKey */
+        false, /*altKey */
+        false, /*shiftKey */
+        false, /*metaKey */
+        0,     /*button */
+        null   /*relatedTarget*/);
+      node.dispatchEvent(e);
+    }
+
     suite('formatting', function () {
 
       test('default format is DD MMM YYYY', function () {
@@ -241,6 +274,34 @@
         assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
       });
 
+      test('shorthands quarters', function () {
+        var valueDate = new Date();
+        var input = fixture('DD_MM_YYYY');
+
+        input.$.display.set('value', '1q');
+        input.inputElement.fire('change');
+
+        valueDate.setMonth(valueDate.getMonth() + 3);
+
+        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+
+        input.$.display.set('value', '3q');
+        input.inputElement.fire('change');
+
+        //adding 6 months/2 quarters to previous
+        valueDate.setMonth(valueDate.getMonth() + 6);
+
+        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+      });
+
       test('shorthands years', function () {
         var valueDate = new Date();
         var input = fixture('DD_MM_YYYY');
@@ -283,6 +344,16 @@
         assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
       });
 
+      test('clearing the input text resets the date to undefined', function(){
+
+        var input = fixture('29Jan2016-DD_MM_Y');
+        assert.equal(input.$.display.value, '29 01 2016', 'initial value formatted as string properly');
+        input.$.display.set('value', '');
+        input.inputElement.fire('change');
+
+        assert.isNotOk(input.value, 'value is cleared');
+
+      });
       //TODO Add test cases for absolute date being entered
 
       test('format is considered for date parsing', function(){
@@ -490,7 +561,7 @@
         assert.isUndefined(error.errorMessage, 'errorMessage is not defined');
       });
 
-      test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function () {
+      test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function (done) {
         var input = fixture('range_2d_3m');
 
         MockInteractions.focus(input.inputElement);
@@ -575,7 +646,7 @@
         assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
         assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
         assert.isUndefined(error.errorMessage, 'Boundary Case, errorMessage is not defined');
-
+        done();
       });
 
     });
@@ -619,6 +690,118 @@
           MockInteractions.tap(input.$._picker.$.okBtn);
         }, 100);
       });
+
+
+      test('dropdownMode opens date picker and not the dialogbox', function (done) {
+        var input = fixture('dropdownMode');
+
+        var dialog = input.$._picker.$.dialog;
+        assert.equal(getComputedStyle(dialog).display, 'none');
+        assert.equal(input.$.dropdown.opened, false);
+        var btn = input.$$('.date-button');
+
+        MockInteractions.tap(btn);
+        Polymer.Base.async(function () {
+          assert.equal(getComputedStyle(dialog).display, 'none');
+          assert.equal(input.$.dropdown.opened, true);
+          done();
+        }, 100);
+      });
+
+      test('Focus does NOT open the picker in dropdownMode if openOnFocus is not set', function (done) {
+        var input = fixture('dropdownMode');
+        var dialog = input.$._picker.$.dialog;
+        assert.equal(getComputedStyle(dialog).display, 'none');
+        assert.equal(input.$.dropdown.opened, false);
+        var btn = input.$$('.date-button');
+
+        MockInteractions.focus(input.$.display);
+        Polymer.Base.async(function () {
+          assert.equal(getComputedStyle(dialog).display, 'none');
+          assert.equal(input.$.dropdown.opened, false);
+          done();
+        }, 100);
+      });
+
+      test('Focus opens the picker in dropdownMode if openOnFocus is set', function (done) {
+        var input = fixture('dropdownMode');
+        input.set('openOnFocus', true);
+
+        var dialog = input.$._picker.$.dialog;
+        assert.equal(getComputedStyle(dialog).display, 'none');
+        assert.equal(input.$.dropdown.opened, false);
+        var btn = input.$$('.date-button');
+
+        MockInteractions.focus(input.$.display);
+        Polymer.Base.async(function () {
+          assert.equal(getComputedStyle(dialog).display, 'none');
+          assert.equal(input.$.dropdown.opened, true);
+          done();
+        }, 100);
+      });
+
+      test('dropdownMode clicking OK-Button sets the date and closes the dropdown', function (done) {
+        var input = fixture('dropdownMode');
+        assert.equal(input.$.dropdown.opened, false);
+        var btn = input.$$('.date-button');
+
+        MockInteractions.tap(btn);
+        Polymer.Base.async(function () {
+          assert.equal(input.$.dropdown.opened, true);
+          var newDate = new Date(Date.UTC(2001, 1, 20));
+          input.$.datePicker.set('value', newDate);
+          assert.notEqual(input.value, newDate);
+          MockInteractions.tap(input.$.okBtn);
+          Polymer.Base.async(function () {
+            assert.deepEqual(input.value, newDate);
+            done();
+          }, 100);
+        }, 100);
+      });
+
+      test('dropdownMode double clicking date-div sets the date and closes the dropdown', function (done) {
+        var input = fixture('dropdownMode');
+        assert.equal(input.$.dropdown.opened, false);
+        var btn = input.$$('.date-button');
+
+        MockInteractions.tap(btn);
+        Polymer.Base.async(function () {
+          assert.equal(input.$.dropdown.opened, true);
+          var newDate = new Date(Date.UTC(2001, 1, 20));
+          input.$.datePicker.set('value', newDate);
+          var dateDiv = input.$.datePicker.querySelector('div.day.selected');
+          makeDoubleClick(dateDiv);
+          Polymer.Base.async(function () {
+            assert.deepEqual(input.value, newDate);
+            done();
+          }, 100);
+        }, 100);
+      });
+
+      test('dropdownMode clicking Cancel-Button closes the dropdown without changing date', function (done) {
+        var input = fixture('dropdownMode');
+        var currentValue = new Date(Date.UTC(2001, 1, 20));
+        input.set('value', currentValue);
+
+        assert.equal(input.$.dropdown.opened, false);
+
+        var btn = input.$$('.date-button');
+        MockInteractions.tap(btn);
+        Polymer.Base.async(function () {
+          assert.equal(input.$.dropdown.opened, true);
+          var newValue = new Date(Date.UTC(2013, 10, 2));
+          input.$.datePicker.set('value', newValue);
+          assert.notEqual(input.value, newValue);
+          assert.equal(input.value, currentValue);
+          MockInteractions.tap(input.$.cancelBtn);
+          Polymer.Base.async(function () {
+            assert.notEqual(input.value, newValue);
+            assert.equal(input.value, currentValue);
+            done();
+          }, 100);
+        }, 100);
+      });
+
     });
 
     suite('a11y', function () {
@@ -644,7 +827,7 @@
           MockInteractions.focus(input);
           flush(function () {
             assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
-              document.activeElement, input._focusableElement);
+              document.activeElement, input.$.display.$.input);
             done();
           });
         });
