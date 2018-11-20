@@ -56,9 +56,11 @@ An input control to capture `date` data. `value` property exposes the selected d
         min-width: 300px;
       }
     </style>
-    <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] 
+    <template is="dom-if" if=[[!dropdownMode]]>
+      <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] 
       start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
       on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+    </template>
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]] invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}}
       max=[[max]] min=[[min]]>
 
@@ -66,7 +68,7 @@ An input control to capture `date` data. `value` property exposes the selected d
         <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
       </paper-button>
     </oe-input>
-    <template is="dom-if" if="[[dropdownMode]]">
+    <template is="dom-if" if=[[dropdownMode]]>
       <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
         <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
           <div class="vertical flex">
@@ -200,7 +202,7 @@ An input control to capture `date` data. `value` property exposes the selected d
               this.set('localValue', this.value || new Date());
             }
           } else {
-            this.$._picker.open();
+            this.$$('#_picker').open();
           }
         }
       },
