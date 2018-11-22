@@ -132,7 +132,8 @@ Raises event `oe-date-picked` when date is selected.
         <div class="layout flex">
           <div class="layout vertical flex">
             <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
-              max=[[max]] min=[[min]]></oe-datepicker>
+              max=[[max]] min=[[min]]
+              on-selection-changed="_refreshDetails" on-selection-double-click="_selectionConfirmed"></oe-datepicker>
             <div class="layout horizontal">
               <div class="filler"></div>
               <paper-button id="cancelBtn" dialog-dismiss on-tap="_onCancel">
@@ -206,11 +207,6 @@ Raises event `oe-date-picked` when date is selected.
     },
     _showDecade: function () {
       this.$.datePicker._showDecade();
-    },
-
-    listeners: {
-      'datePicker.selection-changed': '_refreshDetails',
-      'datePicker.selection-double-click': '_selectionConfirmed'
     },
 
     attached: function () {
