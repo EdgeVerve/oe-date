@@ -29,6 +29,10 @@ An input control to capture `date` data. `value` property exposes the selected d
         min-width: 0;
       }
 
+      .date-button:focus {
+        color: var(--paper-input-container-focus-color, --primary-color);
+      }
+
       :host {
         display: block;
       }
@@ -46,24 +50,24 @@ An input control to capture `date` data. `value` property exposes the selected d
         @apply --layout-horizontal;
         height: 46px;
       }
-      .dropdown-content{
+
+      .dropdown-content {
         min-height: 340px;
         min-width: 300px;
       }
     </style>
-    <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]></oe-datepicker-dlg>
-    <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
-      invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
+    <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"></oe-datepicker-dlg>
+    <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]] invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}}
+      max=[[max]] min=[[min]]>
 
-      <paper-button hidden$=[[hideIcon]] suffix class="date-button" tabindex="-1" on-tap="_showDatePicker">
+      <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] disabled=[[disabled]] suffix class="date-button" on-tap="_showDatePicker">
         <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
       </paper-button>
     </oe-input>
     <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
       <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
         <div class="vertical flex">
-          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
-            max=[[max]] min=[[min]]></oe-datepicker>
+          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" max=[[max]] min=[[min]]></oe-datepicker>
           <div class="horizontal">
             <div class="filler"></div>
             <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
@@ -72,7 +76,6 @@ An input control to capture `date` data. `value` property exposes the selected d
         </div>
       </paper-card>
     </iron-dropdown>
-
   </template>
 
   <script>
@@ -111,7 +114,7 @@ An input control to capture `date` data. `value` property exposes the selected d
          * Setting to true makes the datepicker open as a dropdown on focus of this element.
          * This will work only if the oe-date component is in dropdown-mode.
          */
-        openOnFocus:{
+        openOnFocus: {
           type: Boolean,
           value: false
         },
@@ -122,35 +125,50 @@ An input control to capture `date` data. `value` property exposes the selected d
         min: {
           type: Object,
           observer: '_minChanged'
-        }
+        },
+        disabled: {
+          type: Boolean,
+          value: false
+        },
+        startOfWeek: {
+          type: Number,
+          value: 1
+        },
+        disabledDays: {
+          type: Array
+        },
+
       },
       behaviors: [
-        Polymer.PaperInputBehavior,
+        // Polymer.PaperInputBehavior,
         OEUtils.DateInputBehavior,
         OEUtils.FieldBehavior
       ],
       listeners: {
+        'focus': '_forwardFocus',
         '_picker.oe-date-picked': '_datePicked',
-        'display.focus':'_focusHandle',
-        'datePicker.selection-double-click':'_onOK'
+        'display.focus': '_focusHandle',
+        'datePicker.selection-double-click': '_onOK'
       },
-      _focusHandle: function () { // eslint-disable-line no-unused-vars
-        if(this.openOnFocus && this.dropdownMode && !this.expand){
-          Polymer.Base.async(function(){
-            this.set('expand',true);
-            this.set('localValue',this.value || new Date());
-          }.bind(this),100)
+      _focusHandle: function() { // eslint-disable-line no-unused-vars
+        if (this.openOnFocus && this.dropdownMode && !this.expand) {
+          Polymer.Base.async(function() {
+            this.set('expand', true);
+            this.set('localValue', this.value || new Date());
+          }.bind(this), 100)
         }
       },
-
-      attached: function () {
+      _forwardFocus: function(e) {
+        this.$.display.focus();
+      },
+      attached: function() {
         //if value is set instead of date-value, trigger parsing of init-value
         if (!this.value && this.init) {
           this.$.display.set('value', this.init);
           this.$.display.fire('change');
         }
-        this.set('expand',false);
-        this.set('localValue',new Date());
+        this.set('expand', false);
+        this.set('localValue', new Date());
         if (this.max && typeof this.max === 'string') {
           var newDate = this._parseShorthand(this.max);
           if (newDate) {
@@ -167,38 +185,38 @@ An input control to capture `date` data. `value` property exposes the selected d
             console.warn("Invalid 'min' date value", this.min);
           }
         }
-        if(!this.dropdownMode && this.openOnFocus){
+        if (!this.dropdownMode && this.openOnFocus) {
           console.warn("open-on-focus is only available in dropdown-mode.");
         }
       },
-      _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
-        if(!this.readonly && !this.disabled) {
-          if(this.dropdownMode){
-            if(!this.expand){
-              this.set('expand',true);
-              this.set('localValue',this.value || new Date());
+      _showDatePicker: function(e) { // eslint-disable-line no-unused-vars
+        if (!this.readonly && !this.disabled) {
+          if (this.dropdownMode) {
+            if (!this.expand) {
+              this.set('expand', true);
+              this.set('localValue', this.value || new Date());
             }
-          }else{
+          } else {
             this.$._picker.open();
           }
         }
       },
-      _datePicked: function (e) { // eslint-disable-line no-unused-vars
+      _datePicked: function(e) { // eslint-disable-line no-unused-vars
         this.validate();
       },
-      _computeIcon:function(dropdownMode){
-          return dropdownMode?"arrow-drop-down":"today";
+      _computeIcon: function(dropdownMode) {
+        return dropdownMode ? "arrow-drop-down" : "today";
       },
-      _onOK: function () {
+      _onOK: function() {
         this.set('value', this.localValue);
         this.fire('oe-date-picked', this.value);
-        this.set('expand',false);
+        this.set('expand', false);
       },
-      _onCancel: function () {
+      _onCancel: function() {
         this.set('localValue', this.value);
-        this.set('expand',false);
+        this.set('expand', false);
       },
-      _maxChanged: function(newMax){
+      _maxChanged: function(newMax) {
         if (newMax && typeof newMax === 'string') {
           var newDate = this._parseShorthand(newMax);
           if (newDate) {
@@ -209,7 +227,7 @@ An input control to capture `date` data. `value` property exposes the selected d
           }
         }
       },
-      _minChanged: function(newMin){
+      _minChanged: function(newMin) {
         if (newMin && typeof newMin === 'string') {
           var newDate = this._parseShorthand(newMin);
           if (newDate) {
@@ -227,6 +245,5 @@ An input control to capture `date` data. `value` property exposes the selected d
         return this.$.display.inputElement;
       }
     });
-
   </script>
 </dom-module>

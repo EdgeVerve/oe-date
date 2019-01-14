@@ -32,6 +32,12 @@
     </template>
   </test-fixture>
 
+  <test-fixture id="weekends">
+      <template>
+        <oe-datepicker disabled-days="[6,0]"></oe-datepicker>
+      </template>
+  </test-fixture>
+  
   <script>
     suite('oe-datepicker', function () {
 
@@ -54,6 +60,41 @@
         done();
       });
 
+      test('When value is set as string, it is parsed and calendar is shown accordingly', function (done) {
+        var element = fixture('basic');
+        element.set('value', '2018-05-08');
+        expect(element.month.number).to.equal(4);
+        expect(element.month.year).to.equal(2018);        
+        done();
+      });
+
+      test('Disabled Days are disabled', function (done) {
+        var element = fixture('weekends');
+        element.set('value', '2018-05-08');
+        expect(element.month.number).to.equal(4);
+        expect(element.month.year).to.equal(2018);
+        forceXIfStamp(element);
+
+        var may4 = element.querySelector('.items-area .day[data-date="4"]');
+        expect(may4.hasAttribute('disabled')).to.be.false;
+        expect(may4.className.split(' ')).to.not.include('disabled');
+
+        var may5 = element.querySelector('.items-area .day[data-date="5"]');
+        expect(may5.hasAttribute('disabled')).to.be.true;
+        expect(may5.className.split(' ')).to.include('disabled');
+
+        var may6 = element.querySelector('.items-area .day[data-date="6"]');
+        expect(may6.hasAttribute('disabled')).to.be.true;
+        expect(may6.className.split(' ')).to.include('disabled');
+
+        var may7 = element.querySelector('.items-area .day[data-date="7"]');
+        expect(may7.hasAttribute('disabled')).to.be.false;
+        expect(may7.className.split(' ')).to.not.include('disabled');
+        
+        done();
+      });
+
+
       test('When showing months, Next shows next-month', function (done) {
         var picker = fixture('basic');
         var today = new Date();
@@ -69,6 +110,26 @@
         expect(picker.showing).to.equal('month');
         expect(picker._activeMonth).to.equal(nextMonth.getMonth());
         expect(picker._activeYear).to.equal(nextMonth.getFullYear());
+        done();
+        //}, 100);
+      });
+
+      test('When showing December, Next shows January of next year', function (done) {
+        var picker = fixture('basic');
+        var value = new Date();
+        value.setUTCMonth(11);
+        picker.set('value', value);
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(11);
+        expect(picker._activeYear).to.equal(value.getFullYear());
+        forceXIfStamp(picker);
+
+        //Polymer.Base.async(function () {
+        MockInteractions.tap(picker.querySelector('#mnext'));
+
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(0);
+        expect(picker._activeYear).to.equal(value.getFullYear()+1);
         done();
         //}, 100);
       });
@@ -93,6 +154,27 @@
         //}, 100);
       });
 
+      test('When showing January, Prev shows December of previous year', function (done) {
+        var picker = fixture('basic');
+        var value = new Date();
+        value.setUTCMonth(0);
+        picker.set('value', value);
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(0);
+        expect(picker._activeYear).to.equal(value.getFullYear());
+        forceXIfStamp(picker);
+
+        //Polymer.Base.async(function () {
+        MockInteractions.tap(picker.querySelector('#mprev'));
+
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(11);
+        expect(picker._activeYear).to.equal(value.getFullYear()-1);
+        done();
+        //}, 100);
+      });
+
+
       test('When showing months, Clicking month shows year', function (done) {
         var picker = fixture('basic');
         var today = new Date();
@@ -109,6 +191,29 @@
         done();
         //}, 100);
       });
+
+
+      test('When showing year, selecting month shows that month', function (done) {
+        var picker = fixture('basic');
+        var today = new Date();
+
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.querySelector('#mmain'));
+        expect(picker.showing).to.equal('year');
+
+        Polymer.Base.async(function () {
+          /*Select June*/
+          MockInteractions.tap(picker.querySelector('.items-area paper-button[data-month="5"]'));
+          expect(picker.showing).to.equal('month');
+          expect(picker._activeMonth).to.equal(5);
+          done();
+        }, 100);
+      });
+
 
       test('When showing years, Next shows next-year', function (done) {
         var picker = fixture('basic');
@@ -169,6 +274,27 @@
         done();
       });
 
+      test('When showing decade, selecting year shows months for that year', function (done) {
+        var picker = fixture('basic');
+        forceXIfStamp(picker);
+        var today = new Date();
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        MockInteractions.tap(picker.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.querySelector('#ymain'));
+        forceXIfStamp(picker);
+        expect(picker.showing).to.equal('decade');
+        expect(picker.decadeYears).to.be.not.empty;
+        expect(picker.decadeYears).to.include(today.getUTCFullYear());
+        var yearButton = picker.querySelector('.items-area paper-button[data-year="'+today.getUTCFullYear()+'"]');
+        MockInteractions.tap(yearButton);
+        forceXIfStamp(picker);
+        expect(picker.showing).to.equal('year');
+        done();
+      });
+
       test('When showing decade, Clicking Next shows next decade', function (done) {
         var picker = fixture('basic');
         forceXIfStamp(picker);
@@ -209,9 +335,137 @@
         expect(picker.decadeYears).to.be.not.empty;
         expect(picker.decadeYears.pop()).to.equal(max);
         expect(picker.decadeYears.shift()).to.equal(min);
-
         done();
       });
+
+      test('Right Arrow key moves to next date', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowRight', [], 'ArrowRight');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 16)));
+        done();
+      });
+
+      test('Left Arrow key moves to previous date', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowLeft', [], 'ArrowLeft');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 14)));
+        done();
+      });
+
+      test('When disabled, Arrow keys are ignored', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('disabled', true);
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowLeft', [], 'ArrowLeft');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 15)));
+        done();
+      });
+
+
+      test('Up Arrow key moves to previous week', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowUp', [], 'ArrowUp');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 8)));
+        done();
+      });
+
+      test('Down Arrow key moves to previous week', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowDown', [], 'ArrowDown');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 22)));
+        done();
+      });
+
+      test('Pressing Enter sets the value and raises event', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowDown', [], 'ArrowDown');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 22)));
+
+        picker.addEventListener('selection-double-click', function(e){
+          expect(e.detail).to.exist;
+          expect(e.detail.date).to.equal(22);
+          expect(e.detail.year).to.equal(2018);
+          expect(e.detail.value).to.deep.equal(new Date(Date.UTC(2018, 4, 22)))
+          done();
+        });
+
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'Enter', [], 'Enter');
+      });
+
+      test('When selected date is not in view, Right Arrow key moves to 1st of month', function (done) {
+        var picker = fixture('basic');
+        var value = new Date(Date.UTC(2018, 4, 15));
+        picker.set('value', value);
+        expect(picker._activeMonth).to.equal(4);
+        expect(picker._activeYear).to.equal(2018);
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.querySelector('#mnext'));
+        forceXIfStamp(picker);
+        /*We must be showing June now*/
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowRight', [], 'ArrowRight');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 5, 1)));
+        done();
+      });
+
+
+      test('Right Arrow Keys ignore the disabled days', function (done) {
+        var picker = fixture('weekends');
+        var value = new Date(Date.UTC(2018, 4, 4));
+        picker.set('value', value);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowRight', [], 'ArrowRight');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 7)));
+        done();
+      });
+
+      test('Right Arrow Keys ignore the disabled days', function (done) {
+        var picker = fixture('weekends');
+        var value = new Date(Date.UTC(2018, 4, 7));
+        picker.set('value', value);
+        forceXIfStamp(picker);
+        MockInteractions.keyDownOn(picker.querySelector('.items-area'),'ArrowLeft', [], 'ArrowLeft');
+        forceXIfStamp(picker);
+        expect(picker.value).to.deep.equal(new Date(Date.UTC(2018, 4, 4)));
+        done();
+      });
+
 
     });
 
