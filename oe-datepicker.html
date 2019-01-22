@@ -222,7 +222,14 @@
       disabledDays: {
         type: Array
       },
-
+      /**
+       * List of dates that should be disabled for selection
+       * Should be an array of Date Objects
+       */
+      holidays:{
+        type:Array,
+        observer: '_renderCurrentMonth'
+      },
       /**
        * Maximum selectable date
        */
@@ -410,6 +417,10 @@
         var date = new Date(dateValue);
         disabled = (this.disabledDays.indexOf(date.getUTCDay()) >= 0);
       }
+      if(!disabled && this.holidays){
+        var date = new Date(dateValue);
+        disabled = !!this._holidayMap[date.toDateString()];
+      }
       return disabled;
     },
     _equals: function(showing, mode) {
@@ -586,6 +597,16 @@
       //this.prepareMonth(this.value.getMonth(), this.value.getFullYear());
     },
     _renderCurrentMonth: function() {
+      var _holidayMap = {};
+      if(this.holidays && this.holidays.length > 0){
+        this.holidays.forEach(function(h){
+          if(!(h instanceof Date)){
+            h = new Date(h);
+          }
+          _holidayMap[h.toDateString()] = true;
+        });
+      }
+      this.set('_holidayMap',_holidayMap);
       this.prepareMonth(this._activeMonth, this._activeYear);
     }
   });

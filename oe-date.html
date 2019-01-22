@@ -58,7 +58,7 @@ An input control to capture `date` data. `value` property exposes the selected d
     </style>
     <template is="dom-if" if=[[!dropdownMode]]>
       <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] 
-      start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+      start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
       on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
     </template>
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]] invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}}
@@ -72,7 +72,7 @@ An input control to capture `date` data. `value` property exposes the selected d
       <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
         <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
           <div class="vertical flex">
-            <oe-datepicker tabindex="-1" class="flex" id="datePicker" on-selection-double-click="_onOK" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" max=[[max]] min=[[min]]></oe-datepicker>
+            <oe-datepicker tabindex="-1" class="flex" id="datePicker" on-selection-double-click="_onOK" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" max=[[max]] min=[[min]]></oe-datepicker>
             <div class="horizontal">
               <div class="filler"></div>
               <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
@@ -144,7 +144,13 @@ An input control to capture `date` data. `value` property exposes the selected d
         disabledDays: {
           type: Array
         },
-
+        /**
+         *  List of dates that should be disabled for selection,
+         *  Should be Date objects or date strings in 'MM-DD-YYYY' format
+         */
+        holidays:{
+          type:Array
+        }
       },
       behaviors: [
         // Polymer.PaperInputBehavior,

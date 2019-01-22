@@ -30,7 +30,7 @@
     <h3>Date Inputs can have default initial value, be disabled</h3>
     <demo-snippet>
       <template>
-        
+
         <oe-date label="date input"></oe-date>
         <oe-date label="date input as dropdown" dropdown-mode></oe-date>
         <oe-date label="date input opens on focus" open-on-focus dropdown-mode></oe-date>
@@ -67,7 +67,25 @@
     <h3>Weekends and Start of Week</h3>
     <demo-snippet>
       <template>
-          <oe-date label="Starts Sunday and Saturday Sunday are disabled" start-of-week="0" disabled-days="[6,0]"></oe-date>
+        <oe-date label="Starts Sunday and Saturday Sunday are disabled" start-of-week="0" disabled-days="[6,0]"></oe-date>
+      </template>
+    </demo-snippet>
+
+    <h3>Holiday Dates</h3>
+    <demo-snippet>
+      <template>
+        <oe-date id="holiday" label="Oe-date with next 2 alternative days as holidays"></oe-date>
+        <script>
+          var holidayDatePicker = document.getElementById("holiday");
+          var holidays = [];
+          var date;
+          for(var i = 1;i<5;i+=2){
+            date = new Date();
+            date.setUTCDate(date.getUTCDate()+i)
+            holidays.push(date);
+          }
+          holidayDatePicker.set('holidays',holidays);
+        </script>
       </template>
     </demo-snippet>
 
@@ -87,9 +105,9 @@
     <h3>Date Inputs can have label and error-message internationalization</h3>
     <demo-snippet>
       <select id="selector">
-                <option selected>en-US</option>
-                <option>fr</option>
-            </select>
+        <option selected>en-US</option>
+        <option>fr</option>
+      </select>
     </demo-snippet>
 
 
