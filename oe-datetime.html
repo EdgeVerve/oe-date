@@ -83,7 +83,7 @@ An element to capture the date-time value.
         min-width: 300px;
       }
     </style>
-    <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]]></oe-datepicker-dlg>
+    <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] locale="[[locale]]"></oe-datepicker-dlg>
     <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
       auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
       <content select="[prefix]"></content>
@@ -454,9 +454,7 @@ An element to capture the date-time value.
         this.validate();
         this.$.container._handleValue(this.$.display);
       },
-      _validate: function () {
-        return true;
-      },
+
       _showDatePicker: function (e) { // eslint-disable-line no-unused-vars
         if(!this.readonly && !this.disabled) {
           if(this.dropdownMode){

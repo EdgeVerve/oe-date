@@ -228,7 +228,7 @@
        */
       holidays:{
         type:Array,
-        observer: '_renderCurrentMonth'
+        observer: '_holidayChanged'
       },
       /**
        * Maximum selectable date
@@ -596,7 +596,8 @@
 
       //this.prepareMonth(this.value.getMonth(), this.value.getFullYear());
     },
-    _renderCurrentMonth: function() {
+    
+    _holidayChanged:function(){
       var _holidayMap = {};
       if(this.holidays && this.holidays.length > 0){
         this.holidays.forEach(function(h){
@@ -607,6 +608,9 @@
         });
       }
       this.set('_holidayMap',_holidayMap);
+      this._renderCurrentMonth();
+    },
+    _renderCurrentMonth: function() {
       this.prepareMonth(this._activeMonth, this._activeYear);
     }
   });

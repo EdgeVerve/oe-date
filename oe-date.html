@@ -59,7 +59,7 @@ An input control to capture `date` data. `value` property exposes the selected d
     <template is="dom-if" if=[[!dropdownMode]]>
       <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] 
       start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
-      on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+      on-oe-date-picked="_datePicked"  locale="[[locale]]"></oe-datepicker-dlg>
     </template>
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]] invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}}
       max=[[max]] min=[[min]]>
@@ -75,8 +75,8 @@ An input control to capture `date` data. `value` property exposes the selected d
             <oe-datepicker tabindex="-1" class="flex" id="datePicker" on-selection-double-click="_onOK" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" max=[[max]] min=[[min]]></oe-datepicker>
             <div class="horizontal">
               <div class="filler"></div>
-              <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
-              <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+              <paper-button id="cancelBtn" on-tap="_onCancel"><oe-i18n-msg msgid="Cancel"></oe-i18n-msg></paper-button>
+              <paper-button id="okBtn" on-tap="_onOK"><oe-i18n-msg msgid="OK"></oe-i18n-msg></paper-button>
             </div>
           </div>
         </paper-card>
