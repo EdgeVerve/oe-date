@@ -22,14 +22,14 @@ An input control to capture `date` data. `value` property exposes the selected d
 <dom-module id="oe-date">
   <template>
     <style>
-      .date-button {
+      .suffix-btn {
         color: var(--paper-input-container-color, --secondary-text-color);
         padding: 0;
         margin: 0;
         min-width: 0;
       }
 
-      .date-button:focus {
+      .suffix-btn:focus {
         color: var(--paper-input-container-focus-color, --primary-color);
       }
 
@@ -64,10 +64,10 @@ An input control to capture `date` data. `value` property exposes the selected d
     <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]] invalid={{invalid}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}}
       max=[[max]] min=[[min]]>
 
-      <paper-button aria-label="Clear date from calendar" hidden$=[[!disableTextInput]] disabled=[[disabled]] suffix class="date-button" on-tap="_clearDate">
+      <paper-button aria-label="Clear date from calendar" hidden$=[[!disableTextInput]] disabled=[[disabled]] suffix class="suffix-btn" on-tap="_clearDate">
         <iron-icon icon="clear"></iron-icon>
       </paper-button>
-      <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] disabled=[[disabled]] suffix class="date-button" on-tap="_showDatePicker">
+      <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] disabled=[[disabled]] suffix class="suffix-btn date-button" on-tap="_showDatePicker">
         <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
       </paper-button>
     </oe-input>
@@ -280,6 +280,34 @@ An input control to capture `date` data. `value` property exposes the selected d
        */
       get inputElement() {
         return this.$.display.inputElement;
+      },
+      
+      _validate:function(){
+        if(!this.value){
+          return true;
+        }
+        if(this.holidays && this.holidays.length > 0){
+          var selectedDate = this.value;
+          var inValid = this.holidays.find(function(h){
+            var d = h;
+            if(typeof h !== Date){
+              d = new Date(h);
+            }
+            return (d.toDateString() === selectedDate.toDateString())
+          });
+          if(inValid){
+            this.setValidity(false, 'Invalid Date');
+            return false;
+          }
+        }
+        if(this.disabledDays && this.disabledDays.length > 0){
+          var selectedDay = this.value.getUTCDay();
+          if(this.disabledDays.indexOf(selectedDay) !== -1){
+            this.setValidity(false, 'Invalid Date');
+            return false;
+          }
+        }
+        return true;
       },
       _clearDate:function(){
         this.value = undefined;

@@ -63,7 +63,11 @@
       <oe-date required></oe-date>
     </template>
   </test-fixture>
-
+  <test-fixture id="holiday">
+    <template>
+      <oe-date holidays='["01-01-2019","10-10-2019"]'></oe-date>
+    </template>
+  </test-fixture>
   <test-fixture id="mintoday">
     <template>
       <oe-date min="today"></oe-date>
@@ -648,6 +652,20 @@
         done();
       });
 
+      test('holidays Error, if the date value falls on a holiday',function(done){
+        var input = fixture("holiday");
+        flush(function(){
+          assert.equal(input.holidays.length, 2);
+          debugger;
+          var holiday = new Date("01-01-2019");
+          input.set('value',holiday);
+          flush(function(){
+            assert.equal(input.invalid, true);
+            assert.equal(input.errorMessage,"Invalid Date");
+            done();
+          });
+        }); 
+      });
     });
 
     suite('date-picker', function() {
