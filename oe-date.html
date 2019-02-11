@@ -296,14 +296,14 @@ An input control to capture `date` data. `value` property exposes the selected d
             return (d.toDateString() === selectedDate.toDateString())
           });
           if(inValid){
-            this.setValidity(false, 'Invalid Date');
+            this.setValidity(false, 'dateIsHoliday');
             return false;
           }
         }
         if(this.disabledDays && this.disabledDays.length > 0){
           var selectedDay = this.value.getUTCDay();
           if(this.disabledDays.indexOf(selectedDay) !== -1){
-            this.setValidity(false, 'Invalid Date');
+            this.setValidity(false, 'dateIsHoliday');
             return false;
           }
         }

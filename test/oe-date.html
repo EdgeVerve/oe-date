@@ -661,7 +661,7 @@
           input.set('value',holiday);
           flush(function(){
             assert.equal(input.invalid, true);
-            assert.equal(input.errorMessage,"Invalid Date");
+            assert.equal(input.errorMessage,"dateIsHoliday");
             done();
           });
         }); 
