@@ -83,7 +83,7 @@ An element to capture the date-time value.
         min-width: 300px;
       }
     </style>
-    <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] locale="[[locale]]"></oe-datepicker-dlg>
+    <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] locale="[[locale]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" ></oe-datepicker-dlg>
     <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
       auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
       <content select="[prefix]"></content>
@@ -121,7 +121,7 @@ An element to capture the date-time value.
     <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
       <paper-card tabindex="-1" class="dropdown-content layout vertical" disabled$="[[disabled]]">
         <div class="layout vertical flex">
-          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]"
+          <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
             max=[[max]] min=[[min]]></oe-datepicker>
           <div class="layout horizontal">
             <div class="filler"></div>
@@ -225,8 +225,18 @@ An element to capture the date-time value.
         openOnFocus:{
           type: Boolean,
           value: false
-        }
+        },
 
+        disabledDays: {
+          type: Array
+        },
+        /**
+         *  List of dates that should be disabled for selection,
+         *  Should be Date objects or date strings in 'MM-DD-YYYY' format
+         */
+        holidays:{
+          type:Array
+        }
       },
       observers: [
         '_computeValue(dateValue,hour,minute)'
@@ -609,7 +619,33 @@ An element to capture the date-time value.
       get inputElement() {
         return this.$.display;
       },
-
+      _validate:function(){
+        if(!this.value){
+          return true;
+        }
+        if(this.holidays && this.holidays.length > 0){
+          var selectedDate = this.value;
+          var inValid = this.holidays.find(function(h){
+            var d = h;
+            if(typeof h !== Date){
+              d = new Date(h);
+            }
+            return (d.toDateString() === selectedDate.toDateString())
+          });
+          if(inValid){
+            this.setValidity(false, 'dateIsHoliday');
+            return false;
+          }
+        }
+        if(this.disabledDays && this.disabledDays.length > 0){
+          var selectedDay = this.value.getUTCDay();
+          if(this.disabledDays.indexOf(selectedDay) !== -1){
+            this.setValidity(false, 'dateIsHoliday');
+            return false;
+          }
+        }
+        return true;
+      },
       _computeAriaLabel: function (prefixLabel, suffixLabel) {
         return prefixLabel + ' ' + suffixLabel;
       }
