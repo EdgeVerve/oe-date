@@ -98,7 +98,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
                 min-width: 300px;
             }
         </style>
-        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]"></oe-datepicker-dlg>
+        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]"></oe-datepicker-dlg>
         <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
             auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
             <slot name="prefix" slot="prefix"></slot>

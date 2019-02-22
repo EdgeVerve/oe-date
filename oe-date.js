@@ -60,7 +60,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           min-width: 300px;
         }
       </style>
-      <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]"></oe-datepicker-dlg>
+      <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]"></oe-datepicker-dlg>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
         invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
   
