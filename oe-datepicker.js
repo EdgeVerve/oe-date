@@ -135,7 +135,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 </div>
                 <div class="items-area">
                     <template is="dom-repeat" items="{{decadeYears}}">
-                    <paper-button on-tap="_pickYear" class="month title" data-year$={{item}}>{{item}}</paper-button>
+                    <paper-button on-tap="_pickYear" class="month title" data-year$={{item}}>{{_computeLocaleYear(item)}}</paper-button>
                     </template>
                 </div>
                 </div>
@@ -147,7 +147,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 <div>
                 <div class="month-year-bar">
                     <paper-icon-button id="yprev" icon="chevron-left" on-tap="_prevYear"></paper-icon-button>
-                    <paper-button id="ymain" class="title-text" on-tap="_showDecade">{{_activeYear}}</paper-button>
+                    <paper-button id="ymain" class="title-text" on-tap="_showDecade">{{_computeLocaleYear(_activeYear)}}</paper-button>
                     <paper-icon-button id="ynext" icon="chevron-right" on-tap="_nextYear"></paper-icon-button>
                 </div>
                 <div class="items-area">
@@ -290,6 +290,18 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }
     }
 
+    _computeLocaleYear(year){
+        this.__localeCache = this.__localeCache || {};
+        this.__localeCache[this.locale] = this.__localeCache[this.locale] = {yearLocale:{}};
+        var yearLocale = this.__localeCache[this.locale]["yearLocale"];
+        if(!yearLocale[year]){
+            var newD = new Date();
+            newD.setUTCFullYear(year);
+            yearLocale[year] = this.intl.year(newD);
+        }
+        return yearLocale[year];
+    }
+
     /**
      * Renders previous month display
      */
@@ -368,7 +380,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             'day': this.intl.weekDayNamesLong ? this.intl.weekDayNamesLong[dValue.getUTCDay()] : dValue.getUTCDay(),
             'date': dValue.getUTCDate(),
             'month': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].name : dValue.getUTCMonth(),
-            'year': dValue.getUTCFullYear()
+            'year': this.intl.year(dValue)
         };
     }
 
@@ -448,7 +460,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }
         for (i = 1; i <= endPoint; i++) {
             var thisDate = Date.UTC(curYear, curMonth, i);
-
+            
             month.days.push({
                 n: i,
                 day: this.intl.day(thisDate),
@@ -584,6 +596,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }).format;
         intl.month_name_year = Intl.DateTimeFormat(locale, {
             month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC'
+        }).format;
+        intl.year = Intl.DateTimeFormat(locale,{
             year: 'numeric',
             timeZone: 'UTC'
         }).format;
