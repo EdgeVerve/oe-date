@@ -9,6 +9,7 @@ import { LegacyElementMixin } from "@polymer/polymer/lib/legacy/legacy-element-m
 import "@polymer/paper-dialog/paper-dialog.js";
 import "@polymer/paper-button/paper-button.js";
 import "@polymer/iron-flex-layout/iron-flex-layout.js";
+import "@polymer/paper-ripple/paper-ripple.js";
 import "./oe-datepicker.js";
 import "oe-i18n-msg/oe-i18n-msg.js";
 
@@ -78,6 +79,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
   
         .dayOfMonthContainer {
           padding-left: 10px;
+          line-height:normal;
           padding-right: 10px;
           font-size: 89px;
           min-height: 89px;
