@@ -68,6 +68,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 .month {
                     width: calc(25% - 6px);
+                    height: 64px;
                 }
 
                 .day {
