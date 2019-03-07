@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>oe-datetime test</title>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+
+  <script type="module" src="../oe-datetime.js"></script>
+</head>
+
+<body>
+
+  <test-fixture id="basic">
+    <template>
+      <oe-datetime format="DD MM YYYY"></oe-datetime>
+    </template>
+  </test-fixture>
+  <test-fixture id="required">
+    <template>
+      <oe-datetime required label="Required Field"></oe-datetime>
+    </template>
+  </test-fixture>
+  <test-fixture id="minmax">
+    <template>
+      <oe-datetime min="-1w" max="1m"></oe-datetime>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="drop-down">
+      <template>
+        <oe-datetime label="dropdown" min="today" max="1w" dropdown-mode></oe-datetime>
+      </template>
+  </test-fixture>
+
+  <script type="module">
+    import {
+      DomApi
+    } from "@polymer/polymer/lib/legacy/polymer.dom";
+    import '@polymer/iron-test-helpers/mock-interactions';
+    import {forceXIfStamp} from '@polymer/iron-test-helpers/test-helpers';
+
+
+    function getDom(node) {
+      return new DomApi(node);
+    }
+
+    suite('basic', function () {
+      var input;
+      setup(function(done){
+        input = fixture('basic');
+        flush(function(){
+          done();
+        })
+      });
+
+      test('setting value sets the date, hour and minute values', function (done) {
+        var date = new Date();
+        var utc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        input.set('value',date.toISOString());
+        flush(function(){
+          expect(input.hour).to.equal(date.getHours());
+          expect(input.minute).to.equal(date.getMinutes());
+          expect(input.dateValue).to.exist;
+          expect(input.dateValue.getTime()).to.equal(utc);
+          expect(input.$.display.inputElement.value).to.equal(OEUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
+          done();
+        });
+      });
+
+      test('setting undefined value clears date, hour and minute values', function () {
+        var date = new Date();
+        var utc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); // eslint-disable-line no-unused-vars
+        input.value = date.toISOString();
+        expect(input.dateValue).to.exist;
+        expect(input.$.display.inputElement.value).to.equal(OEUtils.DateUtils.format(input.dateValue, 'DD MM YYYY'));
+        input.value = null;
+        expect(input.dateValue).to.not.exist;
+        expect(input.hour).to.not.exist.and.not.equal(0);
+        expect(input.minute).to.not.exist.and.not.equal(0);
+        expect(input.$.display.inputElement.value).to.equal('');
+        expect(input.$.hour.inputElement.value).to.equal('');
+        expect(input.$.minute.inputElement.value).to.equal('');
+      });
+    });
+
+    suite('date-picker', function () {
+      var input;
+      setup(function(done){
+        input = fixture('basic');
+        flush(function(){
+          done();
+        })
+      });
+
+      test('tapping date button opens date picker', function (done) {
+        var dialog = input.$._picker.$.dialog;
+        assert.equal(getComputedStyle(dialog).display, 'none');
+        var btn = input.$.btnDatePicker;
+        MockInteractions.tap(btn);
+        flush(function () {
+          assert.notEqual(getComputedStyle(dialog).display, 'none');
+          done();
+        }, 100);
+      });
+
+
+      test('picks up date from date picker', function (done) {
+        flush(function () {
+        var dialog = input.$._picker.$.dialog;
+        assert.equal(getComputedStyle(dialog).display, 'none');
+        var btn = input.$.btnDatePicker;
+        MockInteractions.tap(btn);
+        flush(function () {
+          assert.notEqual(getComputedStyle(dialog).display, 'none');
+          input.$._picker.$.datePicker.value = new Date();
+          input.$._picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
+            flush(function () {
+              assert.isDefined(input.value);
+              done();
+            });
+          });
+          MockInteractions.tap(input.$._picker.$.okBtn);
+        }, 100);
+      });
+    });
+    });
+
+ suite('dropdown-mode', function () {
+      var input;
+      setup(function(done){
+        input = fixture('drop-down');
+        flush(function(){
+          done();
+        })
+      })
+
+      test('tapping date button opens date picker as dropdown', function (done) {
+        var btn = input.shadowRoot.querySelector('.date-button');
+        assert.equal(input.expand, false);
+        MockInteractions.tap(btn);
+        flush(function () {
+          assert.equal(input.expand, true);
+          done();
+        }, 100);
+      });
+
+      test('fousing opens date picker as dropdown', function (done) {
+        var btn = input.shadowRoot.querySelector('.date-button');
+        assert.equal(input.expand, false);
+        input.set('openOnFocus',true);
+        input.$.display.fire('focus',null,{
+          node:input.$.display.inputElement
+        });
+        flush(function () {
+          assert.equal(input.expand, true);
+          done();
+        }, 100);
+      });
+
+      test('picks up date from dropdown date picker', function (done) {
+        var btn = input.shadowRoot.querySelector('.date-button');
+
+        MockInteractions.tap(btn);
+        flush(function () {
+          assert.equal(input.expand, true);
+          input.$.datePicker.value = new Date();
+          MockInteractions.tap(input.$.cancelBtn);
+          flush(function(){
+            assert.equal(input.expand, false);
+            assert.equal(input.dateValue, undefined);
+            MockInteractions.tap(btn);
+            flush(function(){
+              input.$.datePicker.value = new Date();
+              MockInteractions.tap(input.$.okBtn);
+              assert.equal(input.dateValue.toDateString(),input.$.datePicker.value.toDateString());
+              done();
+            });
+          });
+        }, 100);
+      });
+    });
+
+   
+    suite('hour field', function () {
+      var input;
+      setup(function(done){
+        input = fixture('basic');
+        flush(function(){
+          done();
+        })
+      });
+
+      test('setting hour-value updates the timestamp value', function () {
+        var date = new Date();
+        date.setHours(10);
+        date.setMinutes(20);
+        input.set('value',date.toISOString());
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('10');
+        expect(input.txtAMPM).to.equal('AM');
+      });
+
+      test('hour>12 displays (hour-12) PM', function () {
+        var date = new Date();
+        date.setHours(16);
+        date.setMinutes(20);
+        input.set('value',date.toISOString());
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('04');
+        expect(input.txtAMPM).to.equal('PM');
+      });
+
+      test('Changing hour updates the timestamp value', function () {
+        var control = input.$.hour;
+        var date = new Date();
+        date.setHours(16);
+        date.setMinutes(20);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(control.inputElement.value).to.equal('04');
+        expect(input.txtAMPM).to.equal('PM');
+
+        MockInteractions.focus(control);
+        control.inputElement.value = '13';
+        control.fire('change');
+        MockInteractions.blur(control);
+
+        expect(input.hour).to.equal(13);
+        expect(control.inputElement.value).to.equal('01');
+        expect(input.txtAMPM).to.equal('PM');
+      });
+
+      test('UpArrow increases hour and updates timestamp value', function (done) {
+        var control = input.$.hour;
+        var date = new Date();
+        date.setHours(22);
+        date.setMinutes(20);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        
+        expect(control.inputElement.value).to.equal('10');
+        expect(input.txtAMPM).to.equal('PM');
+        MockInteractions.focus(control);
+        MockInteractions.pressAndReleaseKeyOn(control, 38);
+
+        input.async(function () {
+          expect(input.hour).to.equal(23);       
+          expect(control.inputElement.value).to.equal('11');
+          date.setHours(23);
+          expect(input.value).to.deep.equal(date);
+          MockInteractions.pressAndReleaseKeyOn(control, 38);
+          input.async(function () {
+            expect(input.hour).to.equal(0);
+            expect(control.inputElement.value).to.equal('12');
+            done();
+          }, 1)
+        }, 1);
+      
+      });
+
+      test('DownArrow decreases hour and updates timestamp value', function (done) {
+        var control = input.$.hour;
+        var date = new Date();
+        date.setHours(2);
+        date.setMinutes(20);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        input.value = date.toISOString();
+        
+        expect(input.hour).to.equal(date.getHours());
+        expect(control.inputElement.value).to.equal('02');
+        expect(input.txtAMPM).to.equal('AM');
+
+        MockInteractions.focus(control);
+        MockInteractions.pressAndReleaseKeyOn(control, 40);
+        input.async(function () {
+          expect(input.hour).to.equal(1);
+          expect(control.inputElement.value).to.equal('01');
+          date.setHours(1);
+          expect(input.value).to.deep.equal(date);
+
+          MockInteractions.pressAndReleaseKeyOn(control, 40);
+          input.async(function () {
+            expect(input.hour).to.equal(0);
+            expect(control.inputElement.value).to.equal('12');
+            done();
+          }, 1);
+
+        }, 1);
+      });
+
+    });
+
+
+    suite('minute field', function () {
+
+      var input;
+      setup(function(done){
+        input = fixture('basic');
+        flush(function(){
+          done();
+        })
+      });
+
+      test('setting minute-value updates the timestamp value', function () {
+        var date = new Date();
+        date.setHours(10);
+        date.setMinutes(20);
+        input.value = date.toISOString();
+        expect(input.minute).to.equal(date.getMinutes());
+        expect(input.$.minute.inputElement.value).to.equal('20');
+      });
+
+      test('minute>59 displays (minute=0)', function () {
+        var date = new Date();
+        date.setHours(16);
+        date.setMinutes(20);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('04');
+        expect(input.txtAMPM).to.equal('PM');
+      });
+
+      test('Changing minute updates the timestamp value', function () {
+        var control = input.$.minute;
+        var date = new Date();
+        date.setHours(16);
+        date.setMinutes(20);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(control.inputElement.value).to.equal('20');
+        MockInteractions.focus(control);
+        control.inputElement.value =  '13';
+        control.fire('change');
+        MockInteractions.blur(control);
+        expect(input.minute).to.equal(13);
+        expect(control.inputElement.value).to.equal('13');
+      });
+
+      test('UpArrow increases minutes and updates timestamp value', function (done) {
+        var control = input.$.minute;
+        var date = new Date();
+        date.setHours(22);
+        date.setMinutes(58);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        input.value = date.toISOString();
+        
+        expect(input.minute).to.equal(date.getMinutes());
+        expect(control.inputElement.value).to.equal('58');
+        
+        MockInteractions.focus(control);
+        MockInteractions.pressAndReleaseKeyOn(control, 38);
+        input.async(function () {
+          expect(input.minute).to.equal(59);
+          expect(control.inputElement.value).to.equal('59');
+          
+          date.setMinutes(59);
+          expect(input.value).to.deep.equal(date);
+          done();
+        },1);
+      });
+      test('DownArrow decreases hour and updates timestamp value', function (done) {        
+        var control = input.$.minute;
+        var date = new Date();
+        date.setHours(2);
+        date.setMinutes(2);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        input.value = date.toISOString();
+        expect(input.minute).to.equal(date.getMinutes());
+        expect(control.inputElement.value).to.equal('02');
+        
+        MockInteractions.focus(control);
+        MockInteractions.pressAndReleaseKeyOn(control, 40);
+        input.async(function () {
+          expect(input.minute).to.equal(1);
+          expect(control.inputElement.value).to.equal('01');
+          
+          date.setMinutes(1);
+          expect(input.value).to.deep.equal(date);
+          MockInteractions.pressAndReleaseKeyOn(control, 40);
+          input.async(function () {
+            expect(input.minute).to.equal(0);
+            expect(control.inputElement.value).to.equal('00');
+            done();
+          },1);
+        },1);
+      });
+    });
+
+    suite('AM/PM Toggle', function () {
+      var input;
+      setup(function(done){
+        input = fixture('basic');
+        flush(function(){
+          done();
+        })
+      });
+
+      test('setting hours changes AM/PM text correctly', function () {
+        var date = new Date();
+        date.setHours(10);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('10');
+        expect(input.txtAMPM).to.equal('AM');
+        date.setHours(20);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('08');
+        expect(input.txtAMPM).to.equal('PM');
+      });
+
+      test('PM toggle changes to AM and hours updated correctly', function () {
+        var date = new Date();
+        date.setHours(16);
+        date.setMinutes(20);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('04');
+        expect(input.txtAMPM).to.equal('PM');
+        MockInteractions.tap(input.$.btnAMPM);
+        expect(input.hour).to.equal(4);
+        expect(input.$.hour.inputElement.value).to.equal('04');
+        expect(input.txtAMPM).to.equal('AM');
+      });
+      test('AM toggle changes to PM and hours updated correctly', function () {
+        var date = new Date();
+        date.setHours(9);
+        input.value = date.toISOString();
+        expect(input.hour).to.equal(date.getHours());
+        expect(input.$.hour.inputElement.value).to.equal('09');
+        expect(input.txtAMPM).to.equal('AM');
+        MockInteractions.tap(input.$.btnAMPM);
+        expect(input.hour).to.equal(21);
+        expect(input.$.hour.inputElement.value).to.equal('09');
+        expect(input.txtAMPM).to.equal('PM');
+      });
+
+    });
+
+    suite('validation', function () {
+
+      test('for required element, invalid and errorMessage should not be set by default', function (done) {
+        var input = fixture('required');
+        flush(function(){
+          assert.isFalse(input.invalid, 'invalid is false');
+          assert.isUndefined(input.errorMessage, 'errorMessage is undefined');
+          var error = getDom(input.root).querySelector('paper-input-error');
+          assert.isFalse(error.invalid, 'invalid is false');
+          assert.isUndefined(input.errorMessage, 'errorMessage is undefined');
+          done();
+        })
+       
+      });
+
+      test('invalid attribute updated after calling validate()', function (done) {
+        var input = fixture('required');
+        flush(function(){
+          forceXIfStamp(input);
+          input.validate();
+          var error = getDom(input.root).querySelector('paper-input-error');
+          assert.ok(error, 'paper-input-error exists');
+          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+          assert.isTrue(input.invalid, 'invalid is true');
+          assert.equal(input.errorMessage, 'valueMissing');
+          done();
+        })
+       
+      });
+
+      test('rangeUnderflow Error, if input is less than min', function (done) {
+        var control = fixture('minmax');
+        flush(function(){
+          var input = control.$.display;
+          MockInteractions.focus(input);
+          input.inputElement.value = '-2y';
+          input.fire('change');
+          MockInteractions.blur(input);
+
+          forceXIfStamp(input);
+          var error = getDom(control.root).querySelector('paper-input-error');
+          assert.ok(error, 'paper-input-error exists');
+          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+          assert.isTrue(error.invalid, 'invalid is true');
+          assert.isTrue(control.invalid, 'invalid is true');
+          assert.equal(control.errorMessage, 'rangeUnderflow');
+          /* MIN Boundary Case*/
+          MockInteractions.focus(input);
+          input.inputElement.value = '-6d';
+          input.fire('change');
+          MockInteractions.blur(input);
+          forceXIfStamp(input);
+          assert.isFalse(control.invalid, 'Boundary Case, invalid is false');
+          assert.isUndefined(control.errorMessage, 'Boundary Case, errorMessage is not defined');
+          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+          /* MIN Valid Value */
+          MockInteractions.focus(input);
+          input.inputElement.value = '-1d';
+          input.fire('change');
+          MockInteractions.blur(input);
+          forceXIfStamp(input);
+          assert.isFalse(control.invalid, 'invalid is false');
+          assert.isUndefined(control.errorMessage, 'errorMessage is not defined');
+          assert.isFalse(error.invalid, 'invalid is false');
+          done();
+        })
+      });
+
+      test('rangeOverflow Error, if input is more than max', function (done) {
+        var control = fixture('minmax');
+        flush(function(){
+          var input = control.$.display;
+          MockInteractions.focus(input);
+          input.inputElement.value = '1q';
+          input.fire('change');
+          MockInteractions.blur(input);
+          forceXIfStamp(input);
+          var error = getDom(control.root).querySelector('paper-input-error');
+          assert.ok(error, 'paper-input-error exists');
+          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+          assert.isTrue(error.invalid, 'invalid is true');
+          assert.isTrue(control.invalid, 'invalid is true');
+          assert.equal(control.errorMessage, 'rangeOverflow');
+          /* MAX Boundary Case*/
+          MockInteractions.focus(input);
+          input.inputElement.value = '1m';
+          input.fire('change');
+          MockInteractions.blur(input);
+          forceXIfStamp(input);
+          assert.isFalse(control.invalid, 'Boundary Case, invalid is false');
+          assert.isUndefined(control.errorMessage, 'Boundary Case, errorMessage is not defined');
+          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+          /* MAX Valid Value */
+          MockInteractions.focus(input);
+          input.inputElement.value = '3d';
+          input.fire('change');
+          MockInteractions.blur(input);
+          forceXIfStamp(input);
+          assert.isFalse(control.invalid, 'invalid is false');
+          assert.isUndefined(control.errorMessage, 'errorMessage is not defined');
+          assert.isFalse(error.invalid, 'invalid is false');
+          done();
+        });
+      });
+
+      test('when min/max defined without required, min validation should not be triggered for empty value',
+        function (done) {
+          var control = fixture('minmax');
+          flush(function(){
+            var input = control.$.display;
+            MockInteractions.focus(input);
+            input.value = '';
+            input.validate();
+            var error = getDom(control.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            //assert.equal(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.notEqual(control.errorMessage, 'rangeUnderflow');
+            assert.isUndefined(control.errorMessage, 'errorMessage is not defined');
+            done();
+          })
+        });
+
+    });
+  </script>
+
+</body>
+
+</html>

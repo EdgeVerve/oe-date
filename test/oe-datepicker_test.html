@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>oe-datepicker test</title>
+
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+
+
+  <script type="module" src="../oe-datepicker.js"></script>
+</head>
+
+<body>
+
+  <test-fixture id="basic">
+    <template>
+      <oe-datepicker></oe-datepicker>
+    </template>
+  </test-fixture>
+
+  <script type="module">
+    import '@polymer/iron-test-helpers/mock-interactions';
+    import {forceXIfStamp} from '@polymer/iron-test-helpers/test-helpers';
+    suite('oe-datepicker', function () {
+      var picker;
+      setup(function(done){
+        picker = fixture('basic');
+        flush(function(){
+          done();
+        });
+      })
+
+      test('default display is current month and year', function () {
+        var today = new Date();
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+      });
+
+      test('When value is set, calendar is shown based on value', function (done) {
+        var value = new Date();
+        value.setFullYear(value.getFullYear() + 5);
+        value.setMonth(value.getMonth() - 5);
+        picker.set('value', value);
+        expect(picker.month.number).to.equal(value.getMonth());
+        expect(picker.month.year).to.equal(value.getFullYear());
+        done();
+      });
+
+      test('When showing months, Next shows next-month', function (done) {
+        var today = new Date();
+        var nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        forceXIfStamp(picker);
+        //Polymer.Base.async(function () {
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mnext'));
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(nextMonth.getMonth());
+        expect(picker._activeYear).to.equal(nextMonth.getFullYear());
+        done();
+        //}, 100);
+      });
+
+      test('When showing months, Prev shows prev-month', function (done) {
+        var today = new Date();
+        var prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        forceXIfStamp(picker);
+        //Polymer.Base.async(function () {
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mprev'));
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(prevMonth.getMonth());
+        expect(picker._activeYear).to.equal(prevMonth.getFullYear());
+        done();
+        //}, 100);
+      });
+
+      test('When showing months, Clicking month shows year', function (done) {
+        var today = new Date();
+        var prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()); // eslint-disable-line no-unused-vars
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        forceXIfStamp(picker);
+        //Polymer.Base.async(function () {
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        expect(picker.showing).to.equal('year');
+        done();
+        //}, 100);
+      });
+
+      test('When showing years, Next shows next-year', function (done) {
+        forceXIfStamp(picker);
+        var today = new Date();
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#ynext'));
+        var nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+        expect(picker.showing).to.equal('year');
+        expect(picker._activeMonth).to.equal(nextYear.getMonth());
+        expect(picker._activeYear).to.equal(nextYear.getFullYear());
+        done();
+      });
+
+      test('When showing years, Prev shows prev-year', function (done) {
+        forceXIfStamp(picker);
+        var today = new Date();
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#yprev'));
+        var prevYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        expect(picker.showing).to.equal('year');
+        expect(picker._activeMonth).to.equal(prevYear.getMonth());
+        expect(picker._activeYear).to.equal(prevYear.getFullYear());
+        done();
+      });
+
+      test('When showing years, Clicking Year shows decade', function (done) {
+        forceXIfStamp(picker);
+        var today = new Date();
+        expect(picker.showing).to.equal('month');
+        expect(picker._activeMonth).to.equal(today.getMonth());
+        expect(picker._activeYear).to.equal(today.getFullYear());
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#ymain'));
+        expect(picker.showing).to.equal('decade');
+        var year = today.getFullYear();
+        var min = year - (year % 10);
+        var max = min + 10;
+        expect(picker.decadeYears).to.be.not.empty;
+        expect(picker.decadeYears.pop()).to.equal(max);
+        expect(picker.decadeYears.shift()).to.equal(min);
+        done();
+      });
+
+      test('When showing decade, Clicking Next shows next decade', function (done) {
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#ymain'));
+        expect(picker.showing).to.equal('decade');
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#dnext'));
+        var today = new Date();
+        var year = today.getFullYear() + 10;
+        var min = year - (year % 10);
+        var max = min + 10;
+        expect(picker.decadeYears).to.be.not.empty;
+        expect(picker.decadeYears.pop()).to.equal(max);
+        expect(picker.decadeYears.shift()).to.equal(min);
+        done();
+      });
+
+      test('When showing decade, Clicking Prev shows prev decade', function (done) {
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#mmain'));
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#ymain'));
+        expect(picker.showing).to.equal('decade');
+        forceXIfStamp(picker);
+        MockInteractions.tap(picker.shadowRoot.querySelector('#dprev'));
+        var today = new Date();
+        var year = today.getFullYear() - 10;
+        var min = year - (year % 10);
+        var max = min + 10;
+        expect(picker.decadeYears).to.be.not.empty;
+        expect(picker.decadeYears.pop()).to.equal(max);
+        expect(picker.decadeYears.shift()).to.equal(min);
+        done();
+      });
+
+    });
+  </script>
+
+</body>
+
+</html>
