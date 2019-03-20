@@ -140,7 +140,10 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
           <div class="layout flex">
             <div class="layout vertical flex">
               <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
-                max=[[max]] min=[[min]]></oe-datepicker>
+                max=[[max]] min=[[min]]
+                on-selection-changed="_refreshDetails"
+                on-selection-double-click="_selectionConfirmed"
+                ></oe-datepicker>
               <div class="layout horizontal">
                 <div class="filler"></div>
                 <paper-button id="cancelBtn" on-tap="_onCancel">
@@ -301,17 +304,6 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
       e.target.parentNode.insertBefore(e.target._backdrop, e.target);
     }
   }
-
-
-  /**
-   * Connected Callback to initiate event listeners.
-   */
-  connectedCallback() {
-    super.connectedCallback();
-    this.$.datePicker.addEventListener('selection-changed', e => this._refreshDetails(e));
-    this.$.datePicker.addEventListener('selection-double-click', e => this._selectionConfirmed(e));
-  }
-
 }
 
 window.customElements.define(OeDatepickerDlg.is, OeDatepickerDlg);

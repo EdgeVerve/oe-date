@@ -444,29 +444,28 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         if (!this.intl) {
             return;
         }
+        var date = new Date(Date.UTC(curYear, curMonth, 1));
+        var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
+        date = new Date(curYear, curMonth + 1, 0);
+        var endPoint = date.getDate();
         var month = {
-            days: [],
-            name: '',
+            days: new Array(startPoint+endPoint),
+            name: this.intl.month_name_year(date),
             number: curMonth,
             year: curYear
         };
-        var date = new Date(Date.UTC(curYear, curMonth, 1));
-        var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
 
-        month.name = this.intl.month_name_year(date);
-        date = new Date(curYear, curMonth + 1, 0);
-        var endPoint = date.getDate();
         for (var i = 0; i < startPoint; i++) {
-            month.days.push({});
+            month.days[i] = {};
         }
         for (i = 1; i <= endPoint; i++) {
             var thisDate = Date.UTC(curYear, curMonth, i);
             
-            month.days.push({
+            month.days[startPoint + i - 1] ={
                 n: i,
                 day: this.intl.day(thisDate),
                 disabled: this._isDateDisabled(thisDate)
-            });
+            };
         }
 
         this.set('month', month);
@@ -548,12 +547,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      */
     _showDecade() {
         var min = this._activeYear - (this._activeYear % 10);
-        var max = min + 10;
-
-        var years = [];
-        for (var i = min; i <= max; i++) {
-            years.push(i);
-        }
+        /* _activeYear is 1985, min will be 1980 and we show 11 records from 1980 - 1990 both inclusive */
+        var years = [min, min+1, min+2, min+3, min+4, min+5, min+6, min+7, min+8, min+9, min+10];
         this.set('decadeYears', years);
         this.set('showing', 'decade');
     }
@@ -606,18 +601,18 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }).format;
 
         // collect 3-char and long weekday names in arrays
-        var weekDayNames = [];
-        var weekDayNamesLong = [];
-        for (var i = -1; i < 6; i++) {
-            var date = new Date(Date.UTC(2000, 1, i, 0, 0, 0));
-            weekDayNames.push(Intl.DateTimeFormat(locale, {
+        var weekDayNames = new Array(7);;
+        var weekDayNamesLong = new Array(7);;
+        for (var i = 0; i < 7; i++) {
+            var date = new Date(Date.UTC(2000, 1, i-1, 0, 0, 0));
+            weekDayNames[i] = Intl.DateTimeFormat(locale, {
                 weekday: 'narrow',
                 timeZone: 'UTC'
-            }).format(date));
-            weekDayNamesLong.push(Intl.DateTimeFormat(locale, {
+            }).format(date);
+            weekDayNamesLong[i] = Intl.DateTimeFormat(locale, {
                 weekday: 'long',
                 timeZone: 'UTC'
-            }).format(date));
+            }).format(date);
         }
         intl.weekDayNames = weekDayNames;
         intl.weekDayNamesLong = weekDayNamesLong;
@@ -625,26 +620,26 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         //_weekDayNames_long
 
         //long month names in monthNamesLong array
-        var monthNamesLong = [];
-        var monthNames = [];
+        //var monthNamesLong = [];
+        var monthNames = new Array(12);;
         for (var i = 0; i < 12; i++) { // eslint-disable-line no-redeclare
             var date = new Date(Date.UTC(2000, i, 1, 0, 0, 0)); // eslint-disable-line no-redeclare
-            monthNames.push({
+            monthNames[i] ={
                 name: Intl.DateTimeFormat(this.locale, {
                     month: 'short',
                     timeZone: 'UTC'
                 }).format(date),
                 n: i
-            });
+            };
 
-            monthNamesLong.push(
-                Intl.DateTimeFormat(this.locale, {
-                    month: 'long',
-                    timeZone: 'UTC'
-                }).format(date));
+            // monthNamesLong.push(
+            //     Intl.DateTimeFormat(this.locale, {
+            //         month: 'long',
+            //         timeZone: 'UTC'
+            //     }).format(date));
         }
         intl.monthNames = monthNames;
-        intl.monthNamesLong = monthNamesLong;
+        //intl.monthNamesLong = monthNamesLong;
 
         return intl;
     }
