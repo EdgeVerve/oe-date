@@ -84,7 +84,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       <iron-dropdown id="dropdown" no-animations horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
         <paper-card tabindex="-1" slot="dropdown-content" class="dropdown-content layout vertical" disabled$="[[disabled]]">
           <div class="vertical flex">
-            <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]"
+            <oe-datepicker tabindex="-1" disable-initial-load class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]"
             disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
               max=[[max]] min=[[min]]
               on-selection-double-click="_onOK"></oe-datepicker>
@@ -179,7 +179,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       this.$.display.inputElement.fire('change');
     }
     this.set('expand', false);
-    this.set('localValue', new Date());
+    //this.set('localValue', new Date());
     if (this.max && typeof this.max === 'string') {
       var newDate = this._parseShorthand(this.max);
       if (newDate) {

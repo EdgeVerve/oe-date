@@ -197,11 +197,11 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
             value: {
                 type: Date,
-                value: function () {
-                    var t = new Date();
-                    t = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()));
-                    return t;
-                },
+                // value: function () {
+                //     var t = new Date();
+                //     t = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()));
+                //     return t;
+                // },
                 notify: true,
                 observer: '_valueChanged'
             },
@@ -252,8 +252,15 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             min: {
                 type: Date,
                 observer: '_renderCurrentMonth'
-            }
+            },
 
+            /**
+             * 
+             */
+            disableInitialLoad: {
+                type: Boolean,
+                value: false
+            }
             /**
              * Occurs when a date is selected.
              *
@@ -440,7 +447,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * @param {number} curYear 
      */
     prepareMonth(curMonth, curYear) {
-        if (!this.intl) {
+        if (!this.intl || typeof curMonth === 'undefined' || typeof curYear === 'undefined') {
             return;
         }
         var date = new Date(Date.UTC(curYear, curMonth, 1));
@@ -666,9 +673,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         this.set('showing', 'month');
         this._settingsChanged();
 
-        if (!this.value) {
+        if (!this.value && !this.disableInitialLoad) {
             this.set('value', new Date());
-        } else if (typeof this.value != 'date') { // eslint-disable-line valid-typeof
+        } else if (this.value && typeof this.value != 'date') { // eslint-disable-line valid-typeof
             this.set('value', new Date(this.value));
         }
     }

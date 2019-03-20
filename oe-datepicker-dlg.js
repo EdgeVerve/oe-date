@@ -139,7 +139,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
           </div>
           <div class="layout flex">
             <div class="layout vertical flex">
-              <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+              <oe-datepicker disable-initial-load id="datePicker" value={{localValue}} locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
                 max=[[max]] min=[[min]]
                 on-selection-changed="_refreshDetails"
                 on-selection-double-click="_selectionConfirmed"
