@@ -440,7 +440,6 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * @param {number} curYear 
      */
     prepareMonth(curMonth, curYear) {
-
         if (!this.intl) {
             return;
         }
@@ -490,7 +489,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             disabled = (this.disabledDays.indexOf(date.getUTCDay()) >= 0);
         }
         if (!disabled && this.holidays) {
-            disabled = !!this._holidayMap[date.toDateString()];
+            disabled = this._holidayMap && !!this._holidayMap[date.toDateString()];
         }
         return disabled;
     }
@@ -561,13 +560,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      */
     _settingsChanged(l, s, d) { // eslint-disable-line no-unused-vars
         if (!this.locale) return;
-
-        this.intl = this.intls[this.locale];
-        if (!this.intl) {
-            var intl = this._createIntlSettings(this.locale);
-            this.intls[this.locale] = intl;
-            this.intl = intl;
-        }
+        this.intl = OeDatepicker.intls(this.locale);
+        if (!this.intl) return;
 
         // collect 3-char weekday names in _weekDayNames array
         var weekDayNames = this.intl.weekDayNames.slice(0);
@@ -584,7 +578,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * Creates a default setting for Internationalized date time format
      * @param {locale} locale 
      */
-    _createIntlSettings(locale) {
+    static _createIntlSettings(locale) {
         var intl = {};
         intl.day = Intl.DateTimeFormat(locale, {
             day: 'numeric',
@@ -644,13 +638,24 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         return intl;
     }
 
+    static intls(locale){
+        if(!OeDatepicker._intls) {
+            OeDatepicker._intls = {};
+        }
+        
+        var intl = OeDatepicker._intls[locale];
+        if(!intl){
+            intl = OeDatepicker._createIntlSettings(locale);
+            OeDatepicker._intls[locale] = intl;
+        }
+        return intl;
+    }
     /**
      * Constructor to initialize 'intls'
      */
     constructor() {
         super();
-        this.intls = {};
-        this.intls[navigator.language] = this._createIntlSettings(navigator.language);
+        this.intl = OeDatepicker.intls(navigator.language);
     }
 
     /**
