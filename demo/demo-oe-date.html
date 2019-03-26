@@ -21,6 +21,9 @@
   <script type="module" src="../oe-date.js"></script>
   <custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
+      button{
+        margin-top:8px;
+      }
     </style>
   </custom-style>
 </head>
@@ -117,6 +120,7 @@
         <oe-date id="oedate" init="tom" label="click button to increment value"></oe-date>
         <button onclick="dateIncrementValue()">+1 day</button>
         <button onclick="dateSetText()">Set 5m</button>
+        <button onclick="dateReset()">Reset</button>
       </template>
     </demo-snippet>
   </div>
@@ -133,6 +137,11 @@
     var elem = document.getElementById('oedate');
     elem.$.display.set('value', '5m');
     elem.inputElement.fire('change');
+  }
+
+  function dateReset() {
+    var elem = document.getElementById('oedate');
+    elem.set('value',undefined);
   }
   
   if (typeof I18nMsg !== 'undefined') {

@@ -282,7 +282,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
    * Closes the dropdown
    */
   _onCancel() {
-    this.set('localValue', this.value);
+    //this.set('localValue', this.value);
     this.set('expand', false);
   }
 

@@ -144,7 +144,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
         <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
             <paper-card tabindex="-1" slot="dropdown-content" class="dropdown-content layout vertical" disabled$="[[disabled]]">
                 <div class="layout vertical flex">
-                    <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+                    <oe-datepicker tabindex="-1" disable-initial-load class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
                     max=[[max]] min=[[min]]></oe-datepicker>
                     <div class="layout horizontal">
                         <div class="filler"></div>
@@ -295,7 +295,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
             }
         }
         this.set('expand', false);
-        this.set('localValue', new Date());
+        // this.set('localValue', new Date());
         if (this.min) {
             var minD = this._parseShorthand(this.min);
             if (minD) {
@@ -407,6 +407,9 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
         this.$.container._handleValue(this.$.display);
     }
 
+    static get errorDate(){
+        return new Date("error");
+    }
     /**
      * Change event listener that parses the shorthand values given in input like 'tom' or 'today',
      * and sets the parsed DateTime on the 'value' property.
@@ -421,7 +424,8 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
         if (newstr != '') {
             newDate = this._parseShorthand(newstr);
             if (!newDate) {
-                this.dateValue = undefined;
+                this.dateValue = OeDatetime.errorDate;
+                this.value = OeDatetime.errorDate;
                 this.setValidity(false, 'dateFormat');
                 return;
             }
@@ -474,7 +478,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
      * Resets datepicker selection and closes the date-picker
      */
     _onCancel() {
-        this.set('localValue', this.dateValue);
+        // this.set('localValue', this.dateValue);
         this.set('expand', false);
     }
 
