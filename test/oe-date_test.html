@@ -622,6 +622,7 @@
 
       test('tapping date button opens date picker', function (done) {
         var input = fixture('basic');
+        input.set('dialogAttached',true);
         flush(function() {
           var dialog = input.$$('#_picker').$.dialog;
           assert.equal(getComputedStyle(dialog).display, 'none');
@@ -637,6 +638,7 @@
 
       test('picks up date from date picker', function (done) {
         var input = fixture('basic');
+        input.set('dialogAttached',true);
         flush(function() {
           var picker = input.shadowRoot.querySelector('#_picker');
           var dialog = picker.$.dialog;
