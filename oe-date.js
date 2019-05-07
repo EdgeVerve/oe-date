@@ -80,7 +80,10 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
 
       <dom-if if=[[_computeAttachDropdown(dropdownMode,dropdownAttached)]]>
         <template>
-          <iron-dropdown id="dropdown" no-animations horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
+          <iron-dropdown id="dropdown" 
+          no-cancel-on-outside-click=[[openOnFocus]]
+          no-animations horizontal-align="right" 
+          vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}"  no-auto-focus opened={{expand}}>
             <paper-card tabindex="-1" slot="dropdown-content" class="dropdown-content layout vertical" disabled$="[[disabled]]">
               <div class="vertical flex">
                 <oe-datepicker tabindex="-1" disable-initial-load class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]"
@@ -185,7 +188,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
 
     this.inputElement.addEventListener('change', e => this._displayChanged(e));
     this.$.display.addEventListener('focus', e => this._focusHandle(e));
-    //this.$.display.addEventListener('blur', e => this._blurHandle(e));
+    this.addEventListener('blur', e => this._blurHandle(e));
     //if value is set instead of date-value, trigger parsing of init-value
     if (!this.value && this.init) {
       this.$.display.set('value', this.init);
