@@ -496,7 +496,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             disabled = (this.disabledDays.indexOf(date.getUTCDay()) >= 0);
         }
         if (!disabled && this.holidays) {
-            disabled = this._holidayMap && !!this._holidayMap[date.toDateString()];
+            disabled = this._holidayMap && !!this._holidayMap[date.toISOString()];
         }
         return disabled;
     }
@@ -506,9 +506,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         if (this.holidays && this.holidays.length > 0) {
             this.holidays.forEach(function (h) {
                 if (!(h instanceof Date)) {
-                    h = new Date(h);
+                    var temp = new Date(h);
+                    h = new Date(Date.UTC(temp.getFullYear(), temp.getMonth(), temp.getDate()))
                 }
-                _holidayMap[h.toDateString()] = true;
+                _holidayMap[h.toISOString()] = true;
             });
         }
         this.set('_holidayMap', _holidayMap);
