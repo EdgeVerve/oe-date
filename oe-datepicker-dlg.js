@@ -221,12 +221,13 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
       this.set('localValue', this.value);
     } else {
       var now = new Date();
+      now = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
       if (now > this.max) {
         now = this.max;
       } else if (now < this.min) {
         now = this.min;
       }
-      this.set('localValue', new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())));
+      this.set('localValue', now );
     }
     this._refreshDetails({
       detail: this.$.datePicker.getDetails(this.localValue)
