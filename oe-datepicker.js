@@ -118,11 +118,15 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 .title-text {
                     font-size: 18px;
                     min-height: 18px;
-                    font-weight: 400;
+                   /* font-weight: 400; */
                     text-align: center;
 
                     @apply --layout-flex;
                 }
+                .items-area:focus {
+                    font-weight: bold;
+                  }
+                div.items-area:focus { outline: none; }
 
             </style>
 
@@ -130,9 +134,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 <div>
                 <div class="month-year-bar">
-                    <paper-icon-button id="dprev" icon="chevron-left" on-tap="_prevDecade"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous decade" id="dprev" icon="chevron-left" on-tap="_prevDecade"></paper-icon-button>
                     <span class="title-text">Select Year</span>
-                    <paper-icon-button id="dnext" icon="chevron-right" on-tap="_nextDecade"></paper-icon-button>
+                    <paper-icon-button  aria-label="Next decade" id="dnext" icon="chevron-right" on-tap="_nextDecade"></paper-icon-button>
                 </div>
                 <div class="items-area">
                     <template is="dom-repeat" items="{{decadeYears}}">
@@ -147,13 +151,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 <div>
                 <div class="month-year-bar">
-                    <paper-icon-button id="yprev" icon="chevron-left" on-tap="_prevYear"></paper-icon-button>
-                    <paper-button id="ymain" class="title-text" on-tap="_showDecade">{{_computeLocaleYear(_activeYear)}}</paper-button>
-                    <paper-icon-button id="ynext" icon="chevron-right" on-tap="_nextYear"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous year" id="yprev" icon="chevron-left" on-tap="_prevYear"></paper-icon-button>
+                    <paper-button id="ymain" class="title-text" on-tap="_showDecade"  aria-label$="{{_activeYear}}, open year selector" area-pressed="false">{{_computeLocaleYear(_activeYear)}}</paper-button>
+                    <paper-icon-button aria-label="Next year" id="ynext" icon="chevron-right" on-tap="_nextYear"></paper-icon-button>
                 </div>
                 <div class="items-area">
                     <template is="dom-repeat" items="{{_monthNames}}">
-                    <paper-button on-tap="_pickMonth" class="month title" data-month$={{item.n}}>{{item.name}}</paper-button>
+                    <paper-button on-tap="_pickMonth" class="month title" data-month$={{item.n}} aria-label$={{item.longName}}>{{item.name}}</paper-button>
                     </template>
                 </div>
                 </div>
@@ -163,26 +167,21 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             <template is="dom-if" if="{{_equals(showing,'month')}}">
                 <div data-month$="{{month.number}}" data-year$="{{month.year}}">
                 <div class="month-year-bar">
-                    <paper-icon-button id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
-                    <paper-button id="mmain" on-tap="_showYear" class="title-text">{{month.name}}</paper-button>
-                    <paper-icon-button id="mnext" icon="chevron-right" on-tap="_nextMonth"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous month" id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
+                    <paper-button id="mmain" on-tap="_showYear" class="title-text" aria-label$="{{month.name}}, open month selector" area-pressed="false" >{{month.name}}</paper-button>
+                    <paper-icon-button aria-label="Next month" id="mnext" icon="chevron-right" on-tap="_nextMonth"></paper-icon-button>
                 </div>
-                <div class="items-area">
+                <div class="items-area"  on-keydown="_handleDateArrowNavigation" aria-label$="{{month.name}}, Use arrow keys to select date" tabindex$="{{_canTabInOnCalendar(month, value)}}">
                     <template is="dom-repeat" items="{{_weekDayNames}}">
                     <div class="day title">{{item}}</div>
                     </template>
 
                     <template is="dom-repeat" items="{{month.days}}" as="day">
 
-                    <template is="dom-if" if="{{!day.n}}">
-                        <div class="day"></div>
-                    </template>
-                    <template is="dom-if" if="{{day.n}}">
-                        <div on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}"
-                        data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
-                        <span>{{day.day}}</span>
-                        </div>
-                    </template>
+                    <div tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
+              <span>{{day.day}}</span>
+            </div>
+
 
                     </template>
 
@@ -352,9 +351,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * On double click of a date set it as selected date.
      */
     _doubleClick(e) {
+        var data = e.currentTarget.dataset;
+        if (data && data.date) {
+  
         this._pickDate(e);
         this.fire('selection-double-click', this.getDetails(this.value));
     }
+}
 
     /**
      * Sets the selected UTC date as value
@@ -388,6 +391,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             'day': this.intl.weekDayNamesLong ? this.intl.weekDayNamesLong[dValue.getUTCDay()] : dValue.getUTCDay(),
             'date': dValue.getUTCDate(),
             'month': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].name : dValue.getUTCMonth(),
+            'longMonth': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].longName : dValue.getUTCMonth(),
             'year': this.intl.year(dValue)
         };
     }
@@ -417,7 +421,27 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this.set('showing', 'year');
         }
     }
-
+    _canTabInOnCalendar(month, selected){
+        /* If selected date is not in current month we should allow tabbing into calendar */
+        var tabIndex = -1;
+        if(month && selected){
+            if(!selected || month.number !== selected.getUTCMonth() ||
+            month.year !== selected.getUTCFullYear()){
+            tabIndex = 0;
+          }
+        }
+        return tabIndex;
+      }
+      _canTabInOnDate(day, month, selected) {
+  
+        var tabIndex = -1;
+        if (selected && selected.getUTCDate && day.n === selected.getUTCDate() && month.number == selected.getUTCMonth() &&
+          month.year === selected.getUTCFullYear()) {
+          tabIndex = 0;
+        }
+        return tabIndex;
+      }
+  
     /**
      * Returns CSS classes for the date components for styling.
      * @param {number} day day value
@@ -559,7 +583,61 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         this.set('decadeYears', years);
         this.set('showing', 'decade');
     }
-
+    _handleDateArrowNavigation(e) {
+        if (this.disabled || ['Enter','ArrowLeft','ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
+            return;
+          }   
+        var targetDiv = e.currentTarget; 
+        var currentSelection = targetDiv.querySelector('div.day.selected');
+        var data = currentSelection && currentSelection.dataset;
+        if (data && data.date && data.month && data.year) {
+          var day = parseInt(data.date);
+          if (day) {
+            if (e.code === 'Enter') {
+                var newDate = new Date(Date.UTC(data.year, data.month, data.date));
+                if (!this._isDateDisabled(newDate)) {
+                  this.set('value', newDate);
+                  this.fire('selection-double-click', this.getDetails(this.value));
+                  e.preventDefault();
+                }
+              } else {
+                var newDate;
+                if (e.code === 'ArrowLeft') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day - 1));
+                } else if (e.code === 'ArrowUp') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day - 7));
+                } else if (e.code === 'ArrowRight') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day + 1));
+                } else if (e.code === 'ArrowDown') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day + 7));
+                }
+                var tryCount = 15;
+                while(this._isDateDisabled(newDate) && tryCount>0) {
+                  if(e.code === 'ArrowRight' || e.code === 'ArrowDown'){
+                    newDate.setUTCDate(newDate.getUTCDate()+1);
+                  } else {
+                    newDate.setUTCDate(newDate.getUTCDate()-1);
+                  }
+                  tryCount--;
+                }
+                if(!this._isDateDisabled(newDate)){
+                  this.set('value', newDate);
+                  this.fire('selection-changed', this.getDetails(newDate));
+                  e.preventDefault();
+                }
+            }
+        }
+        } else if (this.month && (e.code === 'ArrowRight')) {
+          this.set('value', new Date(Date.UTC(this.month.year, this.month.number, 1)));
+          this.fire('selection-changed', this.getDetails(this.value));
+          e.preventDefault();
+        }
+        //this.async(function(){
+          currentSelection = targetDiv.querySelector('div.day.selected');
+          currentSelection && currentSelection.focus();
+        //});
+      }
+  
     /**
      * Prepares the internationalized dates list
      * @param {locale} l 
@@ -631,7 +709,11 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     month: 'short',
                     timeZone: 'UTC'
                 }).format(date),
-                n: i
+                longName: Intl.DateTimeFormat(this.locale, {
+                    month: 'long',
+                    timeZone: 'UTC'
+                  }).format(date),
+                  n: i
             };
 
             // monthNamesLong.push(

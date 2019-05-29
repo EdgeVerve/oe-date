@@ -124,7 +124,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
             };
         }
       </style>
-      <paper-dialog id="dialog" on-iron-overlay-opened="patchOverlay">
+      <paper-dialog aria-modal="true" modal id="dialog" on-keydown="_handleEscape" on-iron-overlay-opened="patchOverlay">
         <div class="container layout horizontal no-padding">
           <div class="header layout vertical">
             <div class="dayOfWeekContainer" id="day"><span>{{day}}</span></div>
@@ -133,7 +133,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
               <span>{{date}}</span>
             </div>
             <div class="layout vertical flex">
-              <paper-button class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
+              <paper-button aria-label$="{{longMonth}}" class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
               <paper-button class="yearContainer" id="year" on-tap="_showDecade">{{year}}</paper-button>
             </div>
           </div>
@@ -146,11 +146,11 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
                 ></oe-datepicker>
               <div class="layout horizontal">
                 <div class="filler"></div>
-                <paper-button id="cancelBtn" on-tap="_onCancel">
-                    <oe-i18n-msg msgid="cancel"></oe-i18n-msg>
+                <paper-button id="cancelBtn" dialog-dismiss on-tap="_onCancel">
+                    <oe-i18n-msg msgid="cancel">Cancel</oe-i18n-msg>
                 </paper-button>
-                <paper-button id="okBtn" on-tap="_onOK">
-                    <oe-i18n-msg msgid="ok"></oe-i18n-msg>
+                <paper-button id="okBtn" dialog-confirm on-tap="_onOK">
+                    <oe-i18n-msg msgid="ok">OK</oe-i18n-msg>
                 </paper-button>
               </div>
             </div>
@@ -264,6 +264,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
     this.set('date', new Intl.NumberFormat(this.locale, {
       minimumIntegerDigits: 2
     }).format(e.detail.date));
+    this.set('longMonth', e.detail.longMonth);
     this.set('month', e.detail.month);
     this.set('year', e.detail.year);
   }
@@ -294,6 +295,11 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
     this.set('localValue', this.value);
     this.$.dialog.close();
   }
+  _handleEscape(e){
+    if(e.key === 'Escape' || e.keyCode === 27){
+      this._onCancel();
+    }
+  }
 
   /**
    * Pactch to move the backdrop behind the dialog box.
@@ -301,7 +307,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
    */
   patchOverlay(e) {
     if (e.target.withBackdrop) {
-      e.target.parentNode.insertBefore(e.target._backdrop, e.target);
+      e.target.parentNode.insertBefore(e.target._backdrop || e.target.backdropElement, e.target);
     }
   }
 }
