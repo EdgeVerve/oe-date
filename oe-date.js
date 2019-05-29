@@ -77,8 +77,8 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         <paper-button aria-label="clear date from calendar" hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
         </paper-button>
-        <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" disabled=[[disabled]] tabindex="-1" on-tap="_showDatePicker">
-          <iron-icon icon$="today"></iron-icon>
+        <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" disabled=[[disabled]] on-tap="_showDatePicker">
+          <iron-icon icon="today"></iron-icon>
         </paper-button>
       </oe-input>
 
