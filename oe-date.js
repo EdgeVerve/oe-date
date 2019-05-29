@@ -61,20 +61,24 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           min-height: 340px;
           min-width: 300px;
         }
+        .date-button:focus{
+          color: var(--paper-input-container-focus-color, --primary-color);
+        }
+  
       </style>
       <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
         <template>
-          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
         </template>
       </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
         invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
   
-        <paper-button hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
+        <paper-button aria-label="clear date from calendar" hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
         </paper-button>
-        <paper-button hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" on-tap="_showDatePicker">
-          <iron-icon icon="today"></iron-icon>
+        <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" disabled=[[disabled]] tabindex="-1" on-tap="_showDatePicker">
+          <iron-icon icon$="today"></iron-icon>
         </paper-button>
       </oe-input>
 
@@ -156,7 +160,22 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       min: {
         type: Object,
         observer: '_minChanged'
-      }
+      },
+      
+        disabled: {
+          type: Boolean,
+          value: false
+        },
+        
+        startOfWeek: {
+          type: Number,
+          value: 1
+        },
+        disabledDays: {
+          type: Array
+        },
+
+
 
       /**
        * Occurs when a date is selected by pressing the Ok button.
@@ -222,6 +241,9 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
 
 
+  }
+  _forwardFocus(e){
+    this.$.display.focus();
   }
 
 
@@ -300,14 +322,14 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     this.validate();
   }
 
-  /**
-   * Selects the icon to display inside the oe-date input
-   * @param {boolean} dropdownMode 
-   * @return {string} icon for dropdown or calendar
-   */
-  _computeIcon(dropdownMode) {
-    return dropdownMode ? "arrow-drop-down" : "today";
-  }
+  // /**
+  //  * Selects the icon to display inside the oe-date input
+  //  * @param {boolean} dropdownMode 
+  //  * @return {string} icon for dropdown or calendar
+  //  */
+  // _computeIcon(dropdownMode) {
+  //   return dropdownMode ? "arrow-drop-down" : "today";
+  // }
 
   /**
    * Sets the selected value and closes the dropdown
