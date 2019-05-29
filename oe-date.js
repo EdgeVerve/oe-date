@@ -38,7 +38,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     return html`
       <style>
         .suffix-btn {
-          color: var(--paper-input-container-color, --secondary-text-color);
+          color: var(--paper-input-container-color,  var(--secondary-text-color));
           padding: 0;
           margin: 0;
           min-width: 0;
@@ -70,11 +70,11 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
         invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
   
-        <paper-button hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" tabindex="-1" on-tap="_clearDate">
+        <paper-button hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
         </paper-button>
-        <paper-button hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" tabindex="-1" on-tap="_showDatePicker">
-          <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
+        <paper-button hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" on-tap="_showDatePicker">
+          <iron-icon icon="today"></iron-icon>
         </paper-button>
       </oe-input>
 
@@ -176,6 +176,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
 
   constructor(){
     super();
+    this._hasUserTabIndex = this.hasAttribute('tabindex');
     this.dialogAttached = false;
     this.dropdownAttached = false;
   }
@@ -185,7 +186,11 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
   */
   connectedCallback() {
     super.connectedCallback();
-
+    if(!this._hasUserTabIndex){
+      //Removing the tabindex=0 set by paper-input-behavior 
+      //This prevents the focus from moving to the next field in FireFox
+      this.removeAttribute('tabindex');
+    }
     this.inputElement.addEventListener('change', e => this._displayChanged(e));
     this.$.display.addEventListener('focus', e => this._focusHandle(e));
     this.addEventListener('blur', e => this._blurHandle(e));
@@ -353,7 +358,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
   }
 
-
+  
 }
 
 window.customElements.define(OeDate.is, OEDateMixin(OEFieldMixin(OeDate)));
