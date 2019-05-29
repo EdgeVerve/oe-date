@@ -61,10 +61,14 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           min-height: 340px;
           min-width: 300px;
         }
+        .date-button:focus{
+          color: var(--paper-input-container-focus-color, --primary-color);
+        }
+  
       </style>
       <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
         <template>
-          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
         </template>
       </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
@@ -73,7 +77,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         <paper-button hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" tabindex="-1" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
         </paper-button>
-        <paper-button hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" tabindex="-1" on-tap="_showDatePicker">
+        <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" disabled=[[disabled]] tabindex="-1" on-tap="_showDatePicker">
           <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
         </paper-button>
       </oe-input>
@@ -156,7 +160,22 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       min: {
         type: Object,
         observer: '_minChanged'
-      }
+      },
+      
+        disabled: {
+          type: Boolean,
+          value: false
+        },
+        
+        startOfWeek: {
+          type: Number,
+          value: 1
+        },
+        disabledDays: {
+          type: Array
+        },
+
+
 
       /**
        * Occurs when a date is selected by pressing the Ok button.
@@ -185,7 +204,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
   */
   connectedCallback() {
     super.connectedCallback();
-
+    this.addEventListener('focus', e => this._forwardFocus(e));
     this.inputElement.addEventListener('change', e => this._displayChanged(e));
     this.$.display.addEventListener('focus', e => this._focusHandle(e));
     this.addEventListener('blur', e => this._blurHandle(e));
@@ -217,6 +236,9 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
 
 
+  }
+  _forwardFocus(e){
+    this.$.display.focus();
   }
 
 

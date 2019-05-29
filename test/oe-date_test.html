@@ -624,7 +624,7 @@
         var input = fixture('basic');
         input.set('dialogAttached',true);
         flush(function() {
-          var dialog = input.$$('#_picker').$.dialog;
+          var dialog = input.shadowRoot.querySelector('#_picker').$.dialog;
           assert.equal(getComputedStyle(dialog).display, 'none');
           var btn = input.shadowRoot.querySelector('.date-button');
           MockInteractions.tap(btn);
@@ -696,17 +696,17 @@
         MockInteractions.tap(btn);
         flush(function () {
           
-          var datePicker = input.$$('#datePicker');
+          var datePicker = input.shadowRoot.querySelector('#datePicker');
           assert.equal(input.expand, true);
           datePicker.value = new Date();
-          MockInteractions.tap(input.$$('#cancelBtn'));
+          MockInteractions.tap(input.shadowRoot.querySelector('#cancelBtn'));
           flush(function(){
             assert.equal(input.expand, false);
             assert.equal(input.value, undefined);
             MockInteractions.tap(btn);
             flush(function(){
               datePicker.value = new Date();
-              MockInteractions.tap(input.$$('#okBtn'));
+              MockInteractions.tap(input.shadowRoot.querySelector('#okBtn'));
               assert.equal(input.value,datePicker.value);
               done();
             });
@@ -743,7 +743,7 @@
           MockInteractions.focus(input);
           flush(function () {
             assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
-              document.activeElement, input.$.display);
+            document.activeElement, input.$.display);
             done();
           });
         });
