@@ -38,6 +38,24 @@
         <oe-datetime label="Min=-1w Max=Today" min="-1w" max="today"></oe-datetime>
       </template>
     </demo-snippet>
+
+    <h3>Holiday Dates</h3>
+    <demo-snippet>
+      <template>
+        <oe-datetime id="holiday" label="Oe-date with next 2 alternative days as holidays"></oe-datetime>
+        <script>
+          var holidayDatePicker = document.getElementById("holiday");
+          var holidays = [];
+          var date;
+          for(var i = 1;i<5;i+=2){
+            date = new Date();
+            date.setUTCDate(date.getUTCDate()+i)
+            holidays.push(date);
+          }
+          holidayDatePicker.set('holidays',holidays);
+        </script>
+      </template>
+    </demo-snippet>
   </div>
 
 </body>
