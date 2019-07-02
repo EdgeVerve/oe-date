@@ -297,11 +297,11 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }
     }
 
-    _computeLocaleYear(year){
+    _computeLocaleYear(year) {
         this.__localeCache = this.__localeCache || {};
-        this.__localeCache[this.locale] = this.__localeCache[this.locale] = {yearLocale:{}};
+        this.__localeCache[this.locale] = this.__localeCache[this.locale] = { yearLocale: {} };
         var yearLocale = this.__localeCache[this.locale]["yearLocale"];
-        if(!yearLocale[year]){
+        if (!yearLocale[year]) {
             var newD = new Date();
             newD.setUTCFullYear(year);
             yearLocale[year] = this.intl.year(newD);
@@ -353,11 +353,11 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
     _doubleClick(e) {
         var data = e.currentTarget.dataset;
         if (data && data.date) {
-  
-        this._pickDate(e);
-        this.fire('selection-double-click', this.getDetails(this.value));
+
+            this._pickDate(e);
+            this.fire('selection-double-click', this.getDetails(this.value));
+        }
     }
-}
 
     /**
      * Sets the selected UTC date as value
@@ -421,27 +421,27 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this.set('showing', 'year');
         }
     }
-    _canTabInOnCalendar(month, selected){
+    _canTabInOnCalendar(month, selected) {
         /* If selected date is not in current month we should allow tabbing into calendar */
         var tabIndex = -1;
-        if(month && selected){
-            if(!selected || month.number !== selected.getUTCMonth() ||
-            month.year !== selected.getUTCFullYear()){
-            tabIndex = 0;
-          }
+        if (month && selected) {
+            if (!selected || month.number !== selected.getUTCMonth() ||
+                month.year !== selected.getUTCFullYear()) {
+                tabIndex = 0;
+            }
         }
         return tabIndex;
-      }
-      _canTabInOnDate(day, month, selected) {
-  
+    }
+    _canTabInOnDate(day, month, selected) {
+
         var tabIndex = -1;
         if (selected && selected.getUTCDate && day.n === selected.getUTCDate() && month.number == selected.getUTCMonth() &&
-          month.year === selected.getUTCFullYear()) {
-          tabIndex = 0;
+            month.year === selected.getUTCFullYear()) {
+            tabIndex = 0;
         }
         return tabIndex;
-      }
-  
+    }
+
     /**
      * Returns CSS classes for the date components for styling.
      * @param {number} day day value
@@ -479,7 +479,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         date = new Date(curYear, curMonth + 1, 0);
         var endPoint = date.getDate();
         var month = {
-            days: new Array(startPoint+endPoint),
+            days: new Array(startPoint + endPoint),
             name: this.intl.month_name_year(date),
             number: curMonth,
             year: curYear
@@ -490,8 +490,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         }
         for (i = 1; i <= endPoint; i++) {
             var thisDate = Date.UTC(curYear, curMonth, i);
-            
-            month.days[startPoint + i - 1] ={
+
+            month.days[startPoint + i - 1] = {
                 n: i,
                 day: this.intl.day(thisDate),
                 disabled: this._isDateDisabled(thisDate)
@@ -531,7 +531,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this.holidays.forEach(function (h) {
                 if (!(h instanceof Date)) {
                     var temp = new Date(h);
-                    h = new Date(Date.UTC(temp.getFullYear(), temp.getMonth(), temp.getDate()))
+                    h = new Date(Date.UTC(temp.getFullYear(), temp.getMonth(), temp.getDate()));
                 }
                 _holidayMap[h.toISOString()] = true;
             });
@@ -579,65 +579,65 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
     _showDecade() {
         var min = this._activeYear - (this._activeYear % 10);
         /* _activeYear is 1985, min will be 1980 and we show 11 records from 1980 - 1990 both inclusive */
-        var years = [min, min+1, min+2, min+3, min+4, min+5, min+6, min+7, min+8, min+9, min+10];
+        var years = [min, min + 1, min + 2, min + 3, min + 4, min + 5, min + 6, min + 7, min + 8, min + 9, min + 10];
         this.set('decadeYears', years);
         this.set('showing', 'decade');
     }
     _handleDateArrowNavigation(e) {
-        if (this.disabled || ['Enter','ArrowLeft','ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
+        if (this.disabled || ['Enter', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
             return;
-          }   
-        var targetDiv = e.currentTarget; 
+        }
+        var targetDiv = e.currentTarget;
+        var newDate;
         var currentSelection = targetDiv.querySelector('div.day.selected');
         var data = currentSelection && currentSelection.dataset;
         if (data && data.date && data.month && data.year) {
-          var day = parseInt(data.date);
-          if (day) {
-            if (e.code === 'Enter') {
-                var newDate = new Date(Date.UTC(data.year, data.month, data.date));
-                if (!this._isDateDisabled(newDate)) {
-                  this.set('value', newDate);
-                  this.fire('selection-double-click', this.getDetails(this.value));
-                  e.preventDefault();
-                }
-              } else {
-                var newDate;
-                if (e.code === 'ArrowLeft') {
-                  newDate = new Date(Date.UTC(data.year, data.month, day - 1));
-                } else if (e.code === 'ArrowUp') {
-                  newDate = new Date(Date.UTC(data.year, data.month, day - 7));
-                } else if (e.code === 'ArrowRight') {
-                  newDate = new Date(Date.UTC(data.year, data.month, day + 1));
-                } else if (e.code === 'ArrowDown') {
-                  newDate = new Date(Date.UTC(data.year, data.month, day + 7));
-                }
-                var tryCount = 15;
-                while(this._isDateDisabled(newDate) && tryCount>0) {
-                  if(e.code === 'ArrowRight' || e.code === 'ArrowDown'){
-                    newDate.setUTCDate(newDate.getUTCDate()+1);
-                  } else {
-                    newDate.setUTCDate(newDate.getUTCDate()-1);
-                  }
-                  tryCount--;
-                }
-                if(!this._isDateDisabled(newDate)){
-                  this.set('value', newDate);
-                  this.fire('selection-changed', this.getDetails(newDate));
-                  e.preventDefault();
+            var day = parseInt(data.date);
+            if (day) {
+                if (e.code === 'Enter') {
+                    newDate = new Date(Date.UTC(data.year, data.month, data.date));
+                    if (!this._isDateDisabled(newDate)) {
+                        this.set('value', newDate);
+                        this.fire('selection-double-click', this.getDetails(this.value));
+                        e.preventDefault();
+                    }
+                } else {
+                    if (e.code === 'ArrowLeft') {
+                        newDate = new Date(Date.UTC(data.year, data.month, day - 1));
+                    } else if (e.code === 'ArrowUp') {
+                        newDate = new Date(Date.UTC(data.year, data.month, day - 7));
+                    } else if (e.code === 'ArrowRight') {
+                        newDate = new Date(Date.UTC(data.year, data.month, day + 1));
+                    } else if (e.code === 'ArrowDown') {
+                        newDate = new Date(Date.UTC(data.year, data.month, day + 7));
+                    }
+                    var tryCount = 15;
+                    while (this._isDateDisabled(newDate) && tryCount > 0) {
+                        if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+                            newDate.setUTCDate(newDate.getUTCDate() + 1);
+                        } else {
+                            newDate.setUTCDate(newDate.getUTCDate() - 1);
+                        }
+                        tryCount--;
+                    }
+                    if (!this._isDateDisabled(newDate)) {
+                        this.set('value', newDate);
+                        this.fire('selection-changed', this.getDetails(newDate));
+                        e.preventDefault();
+                    }
                 }
             }
-        }
         } else if (this.month && (e.code === 'ArrowRight')) {
-          this.set('value', new Date(Date.UTC(this.month.year, this.month.number, 1)));
-          this.fire('selection-changed', this.getDetails(this.value));
-          e.preventDefault();
+            this.set('value', new Date(Date.UTC(this.month.year, this.month.number, 1)));
+            this.fire('selection-changed', this.getDetails(this.value));
+            e.preventDefault();
         }
         //this.async(function(){
-          currentSelection = targetDiv.querySelector('div.day.selected');
-          currentSelection && currentSelection.focus();
+        currentSelection = targetDiv.querySelector('div.day.selected');
+        currentSelection && currentSelection.focus();
         //});
-      }
-  
+    }
+
     /**
      * Prepares the internationalized dates list
      * @param {locale} l 
@@ -662,7 +662,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
     /**
      * Creates a default setting for Internationalized date time format
-     * @param {locale} locale 
+     * @param {string} locale locale to create Intl
+     * @return {Object} intl
      */
     static _createIntlSettings(locale) {
         var intl = {};
@@ -675,16 +676,16 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             year: 'numeric',
             timeZone: 'UTC'
         }).format;
-        intl.year = Intl.DateTimeFormat(locale,{
+        intl.year = Intl.DateTimeFormat(locale, {
             year: 'numeric',
             timeZone: 'UTC'
         }).format;
 
         // collect 3-char and long weekday names in arrays
-        var weekDayNames = new Array(7);;
-        var weekDayNamesLong = new Array(7);;
+        var weekDayNames = new Array(7);
+        var weekDayNamesLong = new Array(7);
         for (var i = 0; i < 7; i++) {
-            var date = new Date(Date.UTC(2000, 1, i-1, 0, 0, 0));
+            var date = new Date(Date.UTC(2000, 1, i - 1, 0, 0, 0));
             weekDayNames[i] = Intl.DateTimeFormat(locale, {
                 weekday: 'narrow',
                 timeZone: 'UTC'
@@ -697,44 +698,32 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         intl.weekDayNames = weekDayNames;
         intl.weekDayNamesLong = weekDayNamesLong;
 
-        //_weekDayNames_long
-
-        //long month names in monthNamesLong array
-        //var monthNamesLong = [];
-        var monthNames = new Array(12);;
+        var monthNames = new Array(12);
         for (var i = 0; i < 12; i++) { // eslint-disable-line no-redeclare
             var date = new Date(Date.UTC(2000, i, 1, 0, 0, 0)); // eslint-disable-line no-redeclare
-            monthNames[i] ={
-                name: Intl.DateTimeFormat(this.locale, {
+            monthNames[i] = {
+                name: Intl.DateTimeFormat(locale, {
                     month: 'short',
                     timeZone: 'UTC'
                 }).format(date),
-                longName: Intl.DateTimeFormat(this.locale, {
+                longName: Intl.DateTimeFormat(locale, {
                     month: 'long',
                     timeZone: 'UTC'
-                  }).format(date),
-                  n: i
+                }).format(date),
+                n: i
             };
-
-            // monthNamesLong.push(
-            //     Intl.DateTimeFormat(this.locale, {
-            //         month: 'long',
-            //         timeZone: 'UTC'
-            //     }).format(date));
         }
         intl.monthNames = monthNames;
-        //intl.monthNamesLong = monthNamesLong;
-
         return intl;
     }
 
-    static intls(locale){
-        if(!OeDatepicker._intls) {
+    static intls(locale) {
+        if (!OeDatepicker._intls) {
             OeDatepicker._intls = {};
         }
-        
+
         var intl = OeDatepicker._intls[locale];
-        if(!intl){
+        if (!intl) {
             intl = OeDatepicker._createIntlSettings(locale);
             OeDatepicker._intls[locale] = intl;
         }

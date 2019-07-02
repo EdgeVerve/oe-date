@@ -8,8 +8,8 @@ import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js";
 import { IronFormElementBehavior } from "@polymer/iron-form-element-behavior/iron-form-element-behavior.js";
 import { OEFieldMixin } from "oe-mixins/oe-field-mixin.js";
-import { OETimeMixin } from "oe-mixins/oe-time-mixin.js";
-import { OEDateMixin } from "oe-mixins/oe-date-mixin.js";
+import { OETimeMixin } from "./oe-time-mixin.js";
+import { OEDateMixin } from "./oe-date-mixin.js";
 import "@polymer/iron-input/iron-input.js";
 import "@polymer/iron-flex-layout/iron-flex-layout.js";
 import "@polymer/iron-flex-layout/iron-flex-layout-classes.js";
@@ -331,7 +331,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
      */
     get _focusableElement() {
         return PolymerElement ? this.inputElement._inputElement :
-        this.inputElement;
+            this.inputElement;
     }
 
     /**
@@ -407,7 +407,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
         this.$.container._handleValue(this.$.display);
     }
 
-    static get errorDate(){
+    static get errorDate() {
         return new Date("error");
     }
     /**
