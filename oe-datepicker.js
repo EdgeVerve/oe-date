@@ -284,9 +284,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             return;
         }
         if (this.value && !isNaN(this.value.getTime())) {
-            if (this._activeMonth != this.value.getMonth() || this._activeYear != this.value.getFullYear()) {
-                this._activeMonth = this.value.getMonth();
-                this._activeYear = this.value.getFullYear();
+            if (this._activeMonth != this.value.getUTCMonth() || this._activeYear != this.value.getUTCFullYear()) {
+                this._activeMonth = this.value.getUTCMonth();
+                this._activeYear = this.value.getUTCFullYear();
                 this.prepareMonth(this._activeMonth, this._activeYear);
             }
         } else {
