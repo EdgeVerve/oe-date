@@ -42,6 +42,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           padding: 0;
           margin: 0;
           min-width: 0;
+          @apply --oe-date-suffix;
         }
 
         .vertical {
@@ -64,7 +65,10 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         .date-button:focus{
           color: var(--paper-input-container-focus-color, --primary-color);
         }
-  
+        oe-input {
+          @apply --oe-input-date;
+        }
+       
       </style>
       <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
         <template>
@@ -174,7 +178,12 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       disabledDays: {
         type: Array
       },
-
+      invalid: {
+        type: Boolean,
+        value: false, 
+        notify: true,
+        reflectToAttribute: true
+      },
 
 
       /**
