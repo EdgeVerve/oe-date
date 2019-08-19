@@ -249,6 +249,10 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       console.warn("open-on-focus is only available in dropdown-mode.");
     }
 
+    /** oe-input.Iron-Input.inputElement remains undefined 
+     * (looks like _initSlottedInput only for subsequent dom-change) 
+    */
+    this.inputElement._initSlottedInput();
 
   }
   _forwardFocus(e) {
@@ -325,10 +329,12 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
 
 
   /**
-   * Validate the date selected
+   * Called when date is selected using dialog
    */
   _datePicked(e) { // eslint-disable-line no-unused-vars
-    this.validate();
+    if(this.fieldId) {
+      this.fire('oe-field-changed', {fieldId: this.fieldId, value: e.detail});      
+    }
   }
 
   // /**
@@ -347,6 +353,9 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     this.set('value', this.localValue);
     this.fire('oe-date-picked', this.value);
     this.set('expand', false);
+    if(this.fieldId) {
+      this.fire('oe-field-changed', {fieldId: this.fieldId, value: this.value});      
+    }
   }
 
   /**

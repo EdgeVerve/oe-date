@@ -272,15 +272,13 @@ const DateMixin = function (BaseClass) {
             if (newValue && !(newValue instanceof Date)) {
                 var v = new Date(newValue);
                 this.value = v;
-                newValue = v;
-            }
-
+                return;
+            } 
+            
             if ((newValue instanceof Date) && !isNaN(newValue.getTime())) {
                 this._dateValue = this._format(newValue);
                 this.validate();
-            }
-
-            if (newValue === undefined || newValue === null) {
+            } else if (newValue === undefined || newValue === null) {
                 this._dateValue = '';
                 this.validate();
             }
@@ -316,7 +314,9 @@ const DateMixin = function (BaseClass) {
                 /*Retain the original entered text*/
                 this._dateValue = newstr;
             }
-            this.validate();
+            if(this.fieldId) {
+              this.fire('oe-field-changed', {fieldId: this.fieldId, value: this.value});      
+            }
         }
 
         /**
