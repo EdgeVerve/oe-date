@@ -72,7 +72,11 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       </style>
       <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
         <template>
-          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+          <oe-datepicker-dlg value="{{value}}" id="_picker" 
+              max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" 
+              disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+              locale="[[locale]]" on-oe-date-picked="_datePicked"
+              default-date=[[_resolveReferenceDate(referenceDate,referenceTimezone)]]></oe-datepicker-dlg>
         </template>
       </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
@@ -137,11 +141,17 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         value: false
       },
 
+      /**
+       * vertical offset for date picker dropdown
+       */
       verticalOffset: {
         type: String,
         value: 62
       },
 
+      /**
+       * vertical alignment for date picker dropdown
+       */
       verticalAlign: {
         type: String,
         value: 'top'
@@ -156,35 +166,54 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         value: false
       },
 
+      /**
+       * Maximum allowed date (accepts date shorthands)
+       */
       max: {
         type: Object,
         observer: '_maxChanged'
       },
 
+      /**
+       * Minimum allowed date (accepts date shorthands)
+       */
       min: {
         type: Object,
         observer: '_minChanged'
       },
 
+      /**
+       * flag allows enabling/disabling the control
+       */
       disabled: {
         type: Boolean,
         value: false
       },
 
+      /**
+       * Start of the week for calendar display [0(Sunday)-6(Saturday)]
+       */
       startOfWeek: {
         type: Number,
         value: 1
       },
+
+      /**
+       * Weekly off days [0(Sunday)-6(Saturday)]
+       */
       disabledDays: {
         type: Array
       },
+
+      /**
+       * control's validity flag
+       */
       invalid: {
         type: Boolean,
         value: false, 
         notify: true,
         reflectToAttribute: true
       },
-
 
       /**
        * Occurs when a date is selected by pressing the Ok button.
@@ -318,15 +347,13 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       this.set('dropdownAttached', true);
       this.async(function () {
         this.set('expand', true);
-        this.set('localValue', this.value || new Date());
+        this.set('localValue', this.value || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
       }.bind(this), 0);
     } else {
       this.set('expand', true);
-      this.set('localValue', this.value || new Date());
+      this.set('localValue', this.value || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
     }
   }
-
-
 
   /**
    * Called when date is selected using dialog

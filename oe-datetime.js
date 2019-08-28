@@ -98,7 +98,10 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
                 min-width: 300px;
             }
         </style>
-        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]"></oe-datepicker-dlg>
+        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] 
+            disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+            locale="[[locale]]"
+            default-date=[[_resolveReferenceDate(referenceDate,referenceTimezone)]]></oe-datepicker-dlg>
         <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
             auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
             <slot name="prefix" slot="prefix"></slot>
@@ -319,7 +322,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
     _focusHandle() { // eslint-disable-line no-unused-vars
         if (this.openOnFocus && this.dropdownMode && !this.expand) {
             this.set('expand', true);
-            this.set('localValue', this.dateValue || new Date());
+            this.set('localValue', this.dateValue || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
         }
     }
 
@@ -455,7 +458,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
             if (this.dropdownMode) {
                 if (!this.expand) {
                     this.set('expand', true);
-                    this.set('localValue', this.dateValue || new Date());
+                    this.set('localValue', this.dateValue || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
                 }
             } else {
                 this.$._picker.open();
