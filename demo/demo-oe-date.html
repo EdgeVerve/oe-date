@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <link rel="icon" href="data:,">
 
   <title>oe-date demo</title>
 
@@ -20,6 +21,9 @@
   <script type="module" src="../oe-date.js"></script>
   <custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
+      button{
+        margin-top:8px;
+      }
     </style>
   </custom-style>
 </head>
@@ -31,6 +35,7 @@
       <template>
         <oe-date label="date input"></oe-date>
         <oe-date label="Text input disabled" disable-text-input></oe-date>
+        <oe-date label="Text input disabled with locale" disable-text-input locale="ar-SA"></oe-date>
         <oe-date label="date input as dropdown" dropdown-mode></oe-date>
         <oe-date label="date input opens on focus" open-on-focus dropdown-mode></oe-date>
         <oe-date label="date input with init=tod" init="tod"></oe-date>
@@ -115,6 +120,7 @@
         <oe-date id="oedate" init="tom" label="click button to increment value"></oe-date>
         <button onclick="dateIncrementValue()">+1 day</button>
         <button onclick="dateSetText()">Set 5m</button>
+        <button onclick="dateReset()">Reset</button>
       </template>
     </demo-snippet>
   </div>
@@ -131,6 +137,11 @@
     var elem = document.getElementById('oedate');
     elem.$.display.set('value', '5m');
     elem.inputElement.fire('change');
+  }
+
+  function dateReset() {
+    var elem = document.getElementById('oedate');
+    elem.set('value',undefined);
   }
   
   if (typeof I18nMsg !== 'undefined') {

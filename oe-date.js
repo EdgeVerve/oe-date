@@ -12,6 +12,8 @@ import { OEFieldMixin } from "oe-mixins/oe-field-mixin.js";
 import { OEDateMixin } from "oe-mixins/oe-date-mixin.js";
 import "@polymer/paper-card/paper-card.js";
 import "@polymer/iron-dropdown/iron-dropdown.js";
+import '@polymer/polymer/lib/elements/dom-if.js';
+
 import "oe-input/oe-input.js";
 import "./oe-datepicker.js";
 import "./oe-datepicker-dlg.js";
@@ -36,7 +38,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     return html`
       <style>
         .suffix-btn {
-          color: var(--paper-input-container-color, --secondary-text-color);
+          color: var(--paper-input-container-color,  var(--secondary-text-color));
           padding: 0;
           margin: 0;
           min-width: 0;
@@ -59,32 +61,49 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           min-height: 340px;
           min-width: 300px;
         }
+        .date-button:focus{
+          color: var(--paper-input-container-focus-color, --primary-color);
+        }
+  
       </style>
-      <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]"></oe-datepicker-dlg>
+      <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
+        <template>
+          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+        </template>
+      </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
         invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
   
-        <paper-button hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" tabindex="-1" on-tap="_clearDate">
+        <paper-button aria-label="clear date from calendar" hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
         </paper-button>
-        <paper-button hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" tabindex="-1" on-tap="_showDatePicker">
-          <iron-icon icon$="[[_computeIcon(dropdownMode)]]"></iron-icon>
+        <paper-button aria-label="Select date from calendar" hidden$=[[hideIcon]] slot="suffix" class="suffix-btn date-button" disabled=[[disabled]] on-tap="_showDatePicker">
+          <iron-icon icon="today"></iron-icon>
         </paper-button>
       </oe-input>
-      <iron-dropdown id="dropdown" no-animations horizontal-align="right" vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}" no-auto-focus opened={{expand}}>
-        <paper-card tabindex="-1" slot="dropdown-content" class="dropdown-content layout vertical" disabled$="[[disabled]]">
-          <div class="vertical flex">
-            <oe-datepicker tabindex="-1" class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]"
-            disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
-              max=[[max]] min=[[min]]></oe-datepicker>
-            <div class="horizontal">
-              <div class="filler"></div>
-              <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
-              <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
-            </div>
-          </div>
-        </paper-card>
-      </iron-dropdown>
+
+      <dom-if if=[[_computeAttachDropdown(dropdownMode,dropdownAttached)]]>
+        <template>
+          <iron-dropdown id="dropdown" 
+          no-cancel-on-outside-click=[[openOnFocus]]
+          no-animations horizontal-align="right" 
+          vertical-align="{{verticalAlign}}" vertical-offset="{{verticalOffset}}"  no-auto-focus opened={{expand}}>
+            <paper-card tabindex="-1" slot="dropdown-content" class="dropdown-content layout vertical" disabled$="[[disabled]]">
+              <div class="vertical flex">
+                <oe-datepicker tabindex="-1" disable-initial-load class="flex" id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]"
+                disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+                  max=[[max]] min=[[min]]
+                  on-selection-double-click="_onOK"></oe-datepicker>
+                <div class="horizontal">
+                  <div class="filler"></div>
+                  <paper-button id="cancelBtn" on-tap="_onCancel">Cancel</paper-button>
+                  <paper-button id="okBtn" on-tap="_onOK">OK</paper-button>
+                </div>
+              </div>
+            </paper-card>
+          </iron-dropdown>
+        </template>
+      </dom-if>
     `;
   }
 
@@ -141,7 +160,22 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       min: {
         type: Object,
         observer: '_minChanged'
-      }
+      },
+      
+        disabled: {
+          type: Boolean,
+          value: false
+        },
+        
+        startOfWeek: {
+          type: Number,
+          value: 1
+        },
+        disabledDays: {
+          type: Array
+        },
+
+
 
       /**
        * Occurs when a date is selected by pressing the Ok button.
@@ -151,24 +185,41 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     };
   }
 
+  _computeAttachDialog(dropdownMode,dialogAttached){
+    return !dropdownMode && dialogAttached;
+  }
+
+  _computeAttachDropdown(dropdownMode,dropdownAttached){
+    return dropdownMode && dropdownAttached;
+  }
+
+  constructor(){
+    super();
+    this._hasUserTabIndex = this.hasAttribute('tabindex');
+    this.dialogAttached = false;
+    this.dropdownAttached = false;
+  }
+
   /**
   * Connected Callback to initiate 'change' listener with validation function.
   */
   connectedCallback() {
     super.connectedCallback();
-
+    if(!this._hasUserTabIndex){
+      //Removing the tabindex=0 set by paper-input-behavior 
+      //This prevents the focus from moving to the next field in FireFox
+      this.removeAttribute('tabindex');
+    }
     this.inputElement.addEventListener('change', e => this._displayChanged(e));
-    this.$._picker.addEventListener('oe-date-picked', e => this._datePicked(e));
     this.$.display.addEventListener('focus', e => this._focusHandle(e));
-    //this.$.display.addEventListener('blur', e => this._blurHandle(e));
-    this.$.datePicker.addEventListener('selection-double-click', e => this._onOK(e));
+    this.addEventListener('blur', e => this._blurHandle(e));
     //if value is set instead of date-value, trigger parsing of init-value
     if (!this.value && this.init) {
       this.$.display.set('value', this.init);
       this.$.display.inputElement.fire('change');
     }
     this.set('expand', false);
-    this.set('localValue', new Date());
+    //this.set('localValue', new Date());
     if (this.max && typeof this.max === 'string') {
       var newDate = this._parseShorthand(this.max);
       if (newDate) {
@@ -191,12 +242,14 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
 
 
   }
+  _forwardFocus(e){
+    this.$.display.focus();
+  }
 
 
   _focusHandle(e) { // eslint-disable-line no-unused-vars
     if (this.openOnFocus && this.dropdownMode && !this.expand) {
-      this.set('expand', true);
-      this.set('localValue', this.value || new Date());
+      this.__expandDropDown();
     }
   }
 
@@ -231,15 +284,36 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
   _showDatePicker(e) { // eslint-disable-line no-unused-vars
     if (!this.readonly && !this.disabled) {
       if (this.dropdownMode) {
-        if (!this.expand) {
-          this.set('expand', true);
-          this.set('localValue', this.value || new Date());
+        if (!this.expand && !this.openOnFocus) {
+         this.__expandDropDown();
         }
       } else {
-        this.$._picker.open();
+        if(!this.dialogAttached){
+          this.set('dialogAttached',true);
+          this.async(function(){
+            this.$$('#_picker').open();
+          }.bind(this),0);
+        }else{
+          this.$$('#_picker').open();
+        }
       }
     }
   }
+
+  __expandDropDown(){
+    if(!this.dropdownAttached){
+      this.set('dropdownAttached',true);
+      this.async(function(){
+        this.set('expand', true);
+        this.set('localValue', this.value || new Date());
+      }.bind(this),0);
+    }else{
+      this.set('expand', true);
+      this.set('localValue', this.value || new Date());
+    }
+  }
+
+
 
   /**
    * Validate the date selected
@@ -248,14 +322,14 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     this.validate();
   }
 
-  /**
-   * Selects the icon to display inside the oe-date input
-   * @param {boolean} dropdownMode 
-   * @return {string} icon for dropdown or calendar
-   */
-  _computeIcon(dropdownMode) {
-    return dropdownMode ? "arrow-drop-down" : "today";
-  }
+  // /**
+  //  * Selects the icon to display inside the oe-date input
+  //  * @param {boolean} dropdownMode 
+  //  * @return {string} icon for dropdown or calendar
+  //  */
+  // _computeIcon(dropdownMode) {
+  //   return dropdownMode ? "arrow-drop-down" : "today";
+  // }
 
   /**
    * Sets the selected value and closes the dropdown
@@ -270,7 +344,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
    * Closes the dropdown
    */
   _onCancel() {
-    this.set('localValue', this.value);
+    //this.set('localValue', this.value);
     this.set('expand', false);
   }
 
@@ -306,7 +380,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
   }
 
-
+  
 }
 
 window.customElements.define(OeDate.is, OEDateMixin(OEFieldMixin(OeDate)));

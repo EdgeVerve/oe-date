@@ -622,33 +622,40 @@
 
       test('tapping date button opens date picker', function (done) {
         var input = fixture('basic');
-        var dialog = input.$._picker.$.dialog;
-        assert.equal(getComputedStyle(dialog).display, 'none');
-        var btn = input.shadowRoot.querySelector('.date-button');
-        MockInteractions.tap(btn);
-        flush(function () {
-          assert.notEqual(getComputedStyle(dialog).display, 'none');
-          done();
+        input.set('dialogAttached',true);
+        flush(function() {
+          var dialog = input.shadowRoot.querySelector('#_picker').$.dialog;
+          assert.equal(getComputedStyle(dialog).display, 'none');
+          var btn = input.shadowRoot.querySelector('.date-button');
+          MockInteractions.tap(btn);
+          flush(function () {
+            assert.notEqual(getComputedStyle(dialog).display, 'none');
+            done();
+          }, 200);
         }, 100);
       });
 
 
       test('picks up date from date picker', function (done) {
         var input = fixture('basic');
-        var dialog = input.$._picker.$.dialog;
-        assert.equal(getComputedStyle(dialog).display, 'none');
-        var btn = input.shadowRoot.querySelector('.date-button');
-        MockInteractions.tap(btn);
-        flush(function () {
-          assert.notEqual(getComputedStyle(dialog).display, 'none');
-          input.$._picker.$.datePicker.value = new Date();
-          input.$._picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
-            flush(function () {
-              assert.isDefined(input.value);
-              done();
+        input.set('dialogAttached',true);
+        flush(function() {
+          var picker = input.shadowRoot.querySelector('#_picker');
+          var dialog = picker.$.dialog;
+          assert.equal(getComputedStyle(dialog).display, 'none');
+          var btn = input.shadowRoot.querySelector('.date-button');
+          MockInteractions.tap(btn);
+          flush(function () {
+            assert.notEqual(getComputedStyle(dialog).display, 'none');
+            picker.$.datePicker.value = new Date();
+            picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
+              flush(function () {
+                assert.isDefined(input.value);
+                done();
+              });
             });
-          });
-          MockInteractions.tap(input.$._picker.$.okBtn);
+            MockInteractions.tap(picker.$.okBtn);
+          }, 100);
         }, 100);
       });
     });
@@ -672,7 +679,7 @@
         }, 100);
       });
 
-      test('fousing opens date picker as dropdown', function (done) {
+      test('focusing opens date picker as dropdown', function (done) {
         var btn = input.shadowRoot.querySelector('.date-button');
         assert.equal(input.expand, false);
         input.set('openOnFocus',true);
@@ -688,17 +695,19 @@
 
         MockInteractions.tap(btn);
         flush(function () {
+          
+          var datePicker = input.shadowRoot.querySelector('#datePicker');
           assert.equal(input.expand, true);
-          input.$.datePicker.value = new Date();
-          MockInteractions.tap(input.$.cancelBtn);
+          datePicker.value = new Date();
+          MockInteractions.tap(input.shadowRoot.querySelector('#cancelBtn'));
           flush(function(){
             assert.equal(input.expand, false);
             assert.equal(input.value, undefined);
             MockInteractions.tap(btn);
             flush(function(){
-              input.$.datePicker.value = new Date();
-              MockInteractions.tap(input.$.okBtn);
-              assert.equal(input.value,input.$.datePicker.value);
+              datePicker.value = new Date();
+              MockInteractions.tap(input.shadowRoot.querySelector('#okBtn'));
+              assert.equal(input.value,datePicker.value);
               done();
             });
           });
@@ -734,7 +743,7 @@
           MockInteractions.focus(input);
           flush(function () {
             assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
-              document.activeElement, input.$.display);
+            document.activeElement, input.$.display);
             done();
           });
         });

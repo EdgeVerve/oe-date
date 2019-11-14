@@ -68,6 +68,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 .month {
                     width: calc(25% - 6px);
+                    height: 64px;
                 }
 
                 .day {
@@ -117,11 +118,15 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 .title-text {
                     font-size: 18px;
                     min-height: 18px;
-                    font-weight: 400;
+                   /* font-weight: 400; */
                     text-align: center;
 
                     @apply --layout-flex;
                 }
+                .items-area:focus {
+                    font-weight: bold;
+                  }
+                div.items-area:focus { outline: none; }
 
             </style>
 
@@ -129,13 +134,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 <div>
                 <div class="month-year-bar">
-                    <paper-icon-button id="dprev" icon="chevron-left" on-tap="_prevDecade"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous decade" id="dprev" icon="chevron-left" on-tap="_prevDecade"></paper-icon-button>
                     <span class="title-text">Select Year</span>
-                    <paper-icon-button id="dnext" icon="chevron-right" on-tap="_nextDecade"></paper-icon-button>
+                    <paper-icon-button  aria-label="Next decade" id="dnext" icon="chevron-right" on-tap="_nextDecade"></paper-icon-button>
                 </div>
                 <div class="items-area">
                     <template is="dom-repeat" items="{{decadeYears}}">
-                    <paper-button on-tap="_pickYear" class="month title" data-year$={{item}}>{{item}}</paper-button>
+                    <paper-button on-tap="_pickYear" class="month title" data-year$={{item}}>{{_computeLocaleYear(item)}}</paper-button>
                     </template>
                 </div>
                 </div>
@@ -146,13 +151,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                 <div>
                 <div class="month-year-bar">
-                    <paper-icon-button id="yprev" icon="chevron-left" on-tap="_prevYear"></paper-icon-button>
-                    <paper-button id="ymain" class="title-text" on-tap="_showDecade">{{_activeYear}}</paper-button>
-                    <paper-icon-button id="ynext" icon="chevron-right" on-tap="_nextYear"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous year" id="yprev" icon="chevron-left" on-tap="_prevYear"></paper-icon-button>
+                    <paper-button id="ymain" class="title-text" on-tap="_showDecade"  aria-label$="{{_activeYear}}, open year selector" area-pressed="false">{{_computeLocaleYear(_activeYear)}}</paper-button>
+                    <paper-icon-button aria-label="Next year" id="ynext" icon="chevron-right" on-tap="_nextYear"></paper-icon-button>
                 </div>
                 <div class="items-area">
                     <template is="dom-repeat" items="{{_monthNames}}">
-                    <paper-button on-tap="_pickMonth" class="month title" data-month$={{item.n}}>{{item.name}}</paper-button>
+                    <paper-button on-tap="_pickMonth" class="month title" data-month$={{item.n}} aria-label$={{item.longName}}>{{item.name}}</paper-button>
                     </template>
                 </div>
                 </div>
@@ -162,26 +167,21 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             <template is="dom-if" if="{{_equals(showing,'month')}}">
                 <div data-month$="{{month.number}}" data-year$="{{month.year}}">
                 <div class="month-year-bar">
-                    <paper-icon-button id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
-                    <paper-button id="mmain" on-tap="_showYear" class="title-text">{{month.name}}</paper-button>
-                    <paper-icon-button id="mnext" icon="chevron-right" on-tap="_nextMonth"></paper-icon-button>
+                    <paper-icon-button aria-label="Previous month" id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
+                    <paper-button id="mmain" on-tap="_showYear" class="title-text" aria-label$="{{month.name}}, open month selector" area-pressed="false" >{{month.name}}</paper-button>
+                    <paper-icon-button aria-label="Next month" id="mnext" icon="chevron-right" on-tap="_nextMonth"></paper-icon-button>
                 </div>
-                <div class="items-area">
+                <div class="items-area"  on-keydown="_handleDateArrowNavigation" aria-label$="{{month.name}}, Use arrow keys to select date" tabindex$="{{_canTabInOnCalendar(month, value)}}">
                     <template is="dom-repeat" items="{{_weekDayNames}}">
                     <div class="day title">{{item}}</div>
                     </template>
 
                     <template is="dom-repeat" items="{{month.days}}" as="day">
 
-                    <template is="dom-if" if="{{!day.n}}">
-                        <div class="day"></div>
-                    </template>
-                    <template is="dom-if" if="{{day.n}}">
-                        <div on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}"
-                        data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
-                        <span>{{day.day}}</span>
-                        </div>
-                    </template>
+                    <div tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
+              <span>{{day.day}}</span>
+            </div>
+
 
                     </template>
 
@@ -196,11 +196,11 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
             value: {
                 type: Date,
-                value: function () {
-                    var t = new Date();
-                    t = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()));
-                    return t;
-                },
+                // value: function () {
+                //     var t = new Date();
+                //     t = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()));
+                //     return t;
+                // },
                 notify: true,
                 observer: '_valueChanged'
             },
@@ -251,8 +251,15 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             min: {
                 type: Date,
                 observer: '_renderCurrentMonth'
-            }
+            },
 
+            /**
+             * 
+             */
+            disableInitialLoad: {
+                type: Boolean,
+                value: false
+            }
             /**
              * Occurs when a date is selected.
              *
@@ -288,6 +295,18 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this._activeYear = today.getFullYear();
             this.prepareMonth(this._activeMonth, this._activeYear);
         }
+    }
+
+    _computeLocaleYear(year){
+        this.__localeCache = this.__localeCache || {};
+        this.__localeCache[this.locale] = this.__localeCache[this.locale] = {yearLocale:{}};
+        var yearLocale = this.__localeCache[this.locale]["yearLocale"];
+        if(!yearLocale[year]){
+            var newD = new Date();
+            newD.setUTCFullYear(year);
+            yearLocale[year] = this.intl.year(newD);
+        }
+        return yearLocale[year];
     }
 
     /**
@@ -332,9 +351,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * On double click of a date set it as selected date.
      */
     _doubleClick(e) {
+        var data = e.currentTarget.dataset;
+        if (data && data.date) {
+  
         this._pickDate(e);
         this.fire('selection-double-click', this.getDetails(this.value));
     }
+}
 
     /**
      * Sets the selected UTC date as value
@@ -368,7 +391,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             'day': this.intl.weekDayNamesLong ? this.intl.weekDayNamesLong[dValue.getUTCDay()] : dValue.getUTCDay(),
             'date': dValue.getUTCDate(),
             'month': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].name : dValue.getUTCMonth(),
-            'year': dValue.getUTCFullYear()
+            'longMonth': this.intl.monthNames ? this.intl.monthNames[dValue.getUTCMonth()].longName : dValue.getUTCMonth(),
+            'year': this.intl.year(dValue)
         };
     }
 
@@ -397,7 +421,27 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this.set('showing', 'year');
         }
     }
-
+    _canTabInOnCalendar(month, selected){
+        /* If selected date is not in current month we should allow tabbing into calendar */
+        var tabIndex = -1;
+        if(month && selected){
+            if(!selected || month.number !== selected.getUTCMonth() ||
+            month.year !== selected.getUTCFullYear()){
+            tabIndex = 0;
+          }
+        }
+        return tabIndex;
+      }
+      _canTabInOnDate(day, month, selected) {
+  
+        var tabIndex = -1;
+        if (selected && selected.getUTCDate && day.n === selected.getUTCDate() && month.number == selected.getUTCMonth() &&
+          month.year === selected.getUTCFullYear()) {
+          tabIndex = 0;
+        }
+        return tabIndex;
+      }
+  
     /**
      * Returns CSS classes for the date components for styling.
      * @param {number} day day value
@@ -427,33 +471,31 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * @param {number} curYear 
      */
     prepareMonth(curMonth, curYear) {
-
-        if (!this.intl) {
+        if (!this.intl || typeof curMonth === 'undefined' || typeof curYear === 'undefined') {
             return;
         }
+        var date = new Date(Date.UTC(curYear, curMonth, 1));
+        var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
+        date = new Date(curYear, curMonth + 1, 0);
+        var endPoint = date.getDate();
         var month = {
-            days: [],
-            name: '',
+            days: new Array(startPoint+endPoint),
+            name: this.intl.month_name_year(date),
             number: curMonth,
             year: curYear
         };
-        var date = new Date(Date.UTC(curYear, curMonth, 1));
-        var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
 
-        month.name = this.intl.month_name_year(date);
-        date = new Date(curYear, curMonth + 1, 0);
-        var endPoint = date.getDate();
         for (var i = 0; i < startPoint; i++) {
-            month.days.push({});
+            month.days[i] = {};
         }
         for (i = 1; i <= endPoint; i++) {
             var thisDate = Date.UTC(curYear, curMonth, i);
-
-            month.days.push({
+            
+            month.days[startPoint + i - 1] ={
                 n: i,
                 day: this.intl.day(thisDate),
                 disabled: this._isDateDisabled(thisDate)
-            });
+            };
         }
 
         this.set('month', month);
@@ -478,7 +520,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             disabled = (this.disabledDays.indexOf(date.getUTCDay()) >= 0);
         }
         if (!disabled && this.holidays) {
-            disabled = !!this._holidayMap[date.toDateString()];
+            disabled = this._holidayMap && !!this._holidayMap[date.toISOString()];
         }
         return disabled;
     }
@@ -488,9 +530,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         if (this.holidays && this.holidays.length > 0) {
             this.holidays.forEach(function (h) {
                 if (!(h instanceof Date)) {
-                    h = new Date(h);
+                    var temp = new Date(h);
+                    h = new Date(Date.UTC(temp.getFullYear(), temp.getMonth(), temp.getDate()))
                 }
-                _holidayMap[h.toDateString()] = true;
+                _holidayMap[h.toISOString()] = true;
             });
         }
         this.set('_holidayMap', _holidayMap);
@@ -535,16 +578,66 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      */
     _showDecade() {
         var min = this._activeYear - (this._activeYear % 10);
-        var max = min + 10;
-
-        var years = [];
-        for (var i = min; i <= max; i++) {
-            years.push(i);
-        }
+        /* _activeYear is 1985, min will be 1980 and we show 11 records from 1980 - 1990 both inclusive */
+        var years = [min, min+1, min+2, min+3, min+4, min+5, min+6, min+7, min+8, min+9, min+10];
         this.set('decadeYears', years);
         this.set('showing', 'decade');
     }
-
+    _handleDateArrowNavigation(e) {
+        if (this.disabled || ['Enter','ArrowLeft','ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
+            return;
+          }   
+        var targetDiv = e.currentTarget; 
+        var currentSelection = targetDiv.querySelector('div.day.selected');
+        var data = currentSelection && currentSelection.dataset;
+        if (data && data.date && data.month && data.year) {
+          var day = parseInt(data.date);
+          if (day) {
+            if (e.code === 'Enter') {
+                var newDate = new Date(Date.UTC(data.year, data.month, data.date));
+                if (!this._isDateDisabled(newDate)) {
+                  this.set('value', newDate);
+                  this.fire('selection-double-click', this.getDetails(this.value));
+                  e.preventDefault();
+                }
+              } else {
+                var newDate;
+                if (e.code === 'ArrowLeft') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day - 1));
+                } else if (e.code === 'ArrowUp') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day - 7));
+                } else if (e.code === 'ArrowRight') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day + 1));
+                } else if (e.code === 'ArrowDown') {
+                  newDate = new Date(Date.UTC(data.year, data.month, day + 7));
+                }
+                var tryCount = 15;
+                while(this._isDateDisabled(newDate) && tryCount>0) {
+                  if(e.code === 'ArrowRight' || e.code === 'ArrowDown'){
+                    newDate.setUTCDate(newDate.getUTCDate()+1);
+                  } else {
+                    newDate.setUTCDate(newDate.getUTCDate()-1);
+                  }
+                  tryCount--;
+                }
+                if(!this._isDateDisabled(newDate)){
+                  this.set('value', newDate);
+                  this.fire('selection-changed', this.getDetails(newDate));
+                  e.preventDefault();
+                }
+            }
+        }
+        } else if (this.month && (e.code === 'ArrowRight')) {
+          this.set('value', new Date(Date.UTC(this.month.year, this.month.number, 1)));
+          this.fire('selection-changed', this.getDetails(this.value));
+          e.preventDefault();
+        }
+        //this.async(function(){
+          currentSelection = targetDiv.querySelector('div.day.selected');
+          currentSelection && currentSelection.focus();
+        //});
+      }
+  
     /**
      * Prepares the internationalized dates list
      * @param {locale} l 
@@ -553,13 +646,8 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      */
     _settingsChanged(l, s, d) { // eslint-disable-line no-unused-vars
         if (!this.locale) return;
-
-        this.intl = this.intls[this.locale];
-        if (!this.intl) {
-            var intl = this._createIntlSettings(this.locale);
-            this.intls[this.locale] = intl;
-            this.intl = intl;
-        }
+        this.intl = OeDatepicker.intls(this.locale);
+        if (!this.intl) return;
 
         // collect 3-char weekday names in _weekDayNames array
         var weekDayNames = this.intl.weekDayNames.slice(0);
@@ -576,7 +664,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * Creates a default setting for Internationalized date time format
      * @param {locale} locale 
      */
-    _createIntlSettings(locale) {
+    static _createIntlSettings(locale) {
         var intl = {};
         intl.day = Intl.DateTimeFormat(locale, {
             day: 'numeric',
@@ -587,20 +675,24 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             year: 'numeric',
             timeZone: 'UTC'
         }).format;
+        intl.year = Intl.DateTimeFormat(locale,{
+            year: 'numeric',
+            timeZone: 'UTC'
+        }).format;
 
         // collect 3-char and long weekday names in arrays
-        var weekDayNames = [];
-        var weekDayNamesLong = [];
-        for (var i = -1; i < 6; i++) {
-            var date = new Date(Date.UTC(2000, 1, i, 0, 0, 0));
-            weekDayNames.push(Intl.DateTimeFormat(locale, {
+        var weekDayNames = new Array(7);;
+        var weekDayNamesLong = new Array(7);;
+        for (var i = 0; i < 7; i++) {
+            var date = new Date(Date.UTC(2000, 1, i-1, 0, 0, 0));
+            weekDayNames[i] = Intl.DateTimeFormat(locale, {
                 weekday: 'narrow',
                 timeZone: 'UTC'
-            }).format(date));
-            weekDayNamesLong.push(Intl.DateTimeFormat(locale, {
+            }).format(date);
+            weekDayNamesLong[i] = Intl.DateTimeFormat(locale, {
                 weekday: 'long',
                 timeZone: 'UTC'
-            }).format(date));
+            }).format(date);
         }
         intl.weekDayNames = weekDayNames;
         intl.weekDayNamesLong = weekDayNamesLong;
@@ -608,37 +700,52 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         //_weekDayNames_long
 
         //long month names in monthNamesLong array
-        var monthNamesLong = [];
-        var monthNames = [];
+        //var monthNamesLong = [];
+        var monthNames = new Array(12);;
         for (var i = 0; i < 12; i++) { // eslint-disable-line no-redeclare
             var date = new Date(Date.UTC(2000, i, 1, 0, 0, 0)); // eslint-disable-line no-redeclare
-            monthNames.push({
+            monthNames[i] ={
                 name: Intl.DateTimeFormat(this.locale, {
                     month: 'short',
                     timeZone: 'UTC'
                 }).format(date),
-                n: i
-            });
-
-            monthNamesLong.push(
-                Intl.DateTimeFormat(this.locale, {
+                longName: Intl.DateTimeFormat(this.locale, {
                     month: 'long',
                     timeZone: 'UTC'
-                }).format(date));
+                  }).format(date),
+                  n: i
+            };
+
+            // monthNamesLong.push(
+            //     Intl.DateTimeFormat(this.locale, {
+            //         month: 'long',
+            //         timeZone: 'UTC'
+            //     }).format(date));
         }
         intl.monthNames = monthNames;
-        intl.monthNamesLong = monthNamesLong;
+        //intl.monthNamesLong = monthNamesLong;
 
         return intl;
     }
 
+    static intls(locale){
+        if(!OeDatepicker._intls) {
+            OeDatepicker._intls = {};
+        }
+        
+        var intl = OeDatepicker._intls[locale];
+        if(!intl){
+            intl = OeDatepicker._createIntlSettings(locale);
+            OeDatepicker._intls[locale] = intl;
+        }
+        return intl;
+    }
     /**
      * Constructor to initialize 'intls'
      */
     constructor() {
         super();
-        this.intls = {};
-        this.intls[navigator.language] = this._createIntlSettings(navigator.language);
+        this.intl = OeDatepicker.intls(navigator.language);
     }
 
     /**
@@ -649,9 +756,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         this.set('showing', 'month');
         this._settingsChanged();
 
-        if (!this.value) {
+        if (!this.value && !this.disableInitialLoad) {
             this.set('value', new Date());
-        } else if (typeof this.value != 'date') { // eslint-disable-line valid-typeof
+        } else if (this.value && typeof this.value != 'date') { // eslint-disable-line valid-typeof
             this.set('value', new Date(this.value));
         }
     }

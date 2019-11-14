@@ -9,6 +9,7 @@ import { LegacyElementMixin } from "@polymer/polymer/lib/legacy/legacy-element-m
 import "@polymer/paper-dialog/paper-dialog.js";
 import "@polymer/paper-button/paper-button.js";
 import "@polymer/iron-flex-layout/iron-flex-layout.js";
+import "@polymer/paper-ripple/paper-ripple.js";
 import "./oe-datepicker.js";
 import "oe-i18n-msg/oe-i18n-msg.js";
 
@@ -78,6 +79,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
   
         .dayOfMonthContainer {
           padding-left: 10px;
+          line-height:normal;
           padding-right: 10px;
           font-size: 89px;
           min-height: 89px;
@@ -122,7 +124,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
             };
         }
       </style>
-      <paper-dialog id="dialog" on-iron-overlay-opened="patchOverlay">
+      <paper-dialog aria-modal="true" modal id="dialog" on-keydown="_handleEscape" on-iron-overlay-opened="patchOverlay">
         <div class="container layout horizontal no-padding">
           <div class="header layout vertical">
             <div class="dayOfWeekContainer" id="day"><span>{{day}}</span></div>
@@ -131,21 +133,24 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
               <span>{{date}}</span>
             </div>
             <div class="layout vertical flex">
-              <paper-button class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
+              <paper-button aria-label$="{{longMonth}}" class="monthContainer" id="month" on-tap="_showYear">{{month}}</paper-button>
               <paper-button class="yearContainer" id="year" on-tap="_showDecade">{{year}}</paper-button>
             </div>
           </div>
           <div class="layout flex">
             <div class="layout vertical flex">
-              <oe-datepicker id="datePicker" value="{{localValue}}" locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
-                max=[[max]] min=[[min]]></oe-datepicker>
+              <oe-datepicker disable-initial-load id="datePicker" value={{localValue}} locale="[[locale]]" start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+                max=[[max]] min=[[min]]
+                on-selection-changed="_refreshDetails"
+                on-selection-double-click="_selectionConfirmed"
+                ></oe-datepicker>
               <div class="layout horizontal">
                 <div class="filler"></div>
-                <paper-button id="cancelBtn" on-tap="_onCancel">
-                    <oe-i18n-msg msgid="cancel"></oe-i18n-msg>
+                <paper-button id="cancelBtn" dialog-dismiss on-tap="_onCancel">
+                    <oe-i18n-msg msgid="cancel">Cancel</oe-i18n-msg>
                 </paper-button>
-                <paper-button id="okBtn" on-tap="_onOK">
-                    <oe-i18n-msg msgid="ok"></oe-i18n-msg>
+                <paper-button id="okBtn" dialog-confirm on-tap="_onOK">
+                    <oe-i18n-msg msgid="ok">OK</oe-i18n-msg>
                 </paper-button>
               </div>
             </div>
@@ -216,12 +221,13 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
       this.set('localValue', this.value);
     } else {
       var now = new Date();
+      now = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
       if (now > this.max) {
         now = this.max;
       } else if (now < this.min) {
         now = this.min;
       }
-      this.set('localValue', new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())));
+      this.set('localValue', now );
     }
     this._refreshDetails({
       detail: this.$.datePicker.getDetails(this.localValue)
@@ -259,6 +265,7 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
     this.set('date', new Intl.NumberFormat(this.locale, {
       minimumIntegerDigits: 2
     }).format(e.detail.date));
+    this.set('longMonth', e.detail.longMonth);
     this.set('month', e.detail.month);
     this.set('year', e.detail.year);
   }
@@ -289,6 +296,11 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
     this.set('localValue', this.value);
     this.$.dialog.close();
   }
+  _handleEscape(e){
+    if(e.key === 'Escape' || e.keyCode === 27){
+      this._onCancel();
+    }
+  }
 
   /**
    * Pactch to move the backdrop behind the dialog box.
@@ -296,20 +308,9 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
    */
   patchOverlay(e) {
     if (e.target.withBackdrop) {
-      e.target.parentNode.insertBefore(e.target._backdrop, e.target);
+      e.target.parentNode.insertBefore(e.target._backdrop || e.target.backdropElement, e.target);
     }
   }
-
-
-  /**
-   * Connected Callback to initiate event listeners.
-   */
-  connectedCallback() {
-    super.connectedCallback();
-    this.$.datePicker.addEventListener('selection-changed', e => this._refreshDetails(e));
-    this.$.datePicker.addEventListener('selection-double-click', e => this._selectionConfirmed(e));
-  }
-
 }
 
 window.customElements.define(OeDatepickerDlg.is, OeDatepickerDlg);
