@@ -216,9 +216,15 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       },
 
       /**
-       * Occurs when a date is selected by pressing the Ok button.
+       * Fired when a date is selected by pressing the Ok button.
        *
        * @event oe-date-picked
+       */
+
+      /**
+       * Fired when the value is changed by the user.
+       *
+       * @event oe-field-changed
        */
     };
   }
