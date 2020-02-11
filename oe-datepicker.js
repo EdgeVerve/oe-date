@@ -72,6 +72,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 }
 
                 .day {
+                    min-width: 0px;
                     width: calc(14% - 6px);
                 }
 
@@ -82,10 +83,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     line-height: 30px;
                     cursor: pointer;
                 }
-
-                .day:focus {
-                    outline: none;
-                }
+                
+                 .day:focus {
+                     outline:none;
+                 }
                 .day.selected span {
                     background-color: var(--dp-selected-bg);
                     color: var(--dp-selected-text);
@@ -168,7 +169,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             </template>
 
             <template is="dom-if" if="{{_equals(showing,'month')}}">
-                <div data-month$="{{month.number}}" data-year$="{{month.year}}">
+                <div role="application" data-month$="{{month.number}}" data-year$="{{month.year}}">
                 <div class="month-year-bar">
                     <paper-icon-button aria-label="Previous month" id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
                     <paper-button id="mmain" on-tap="_showYear" class="title-text" aria-label$="{{month.name}}, open month selector" area-pressed="false" >{{month.name}}</paper-button>
@@ -183,11 +184,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
                     <template is="dom-repeat" items="{{month.days}}" as="day">
 
-                    <div role="menu" tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
+                    <div role="button" tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
               <span>{{day.day}}</span>
             </div>
-
-
                     </template>
 
                 </div>
@@ -636,6 +635,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
 
     }
     _handleDateArrowNavigation(e) {
+       // e.preventDefault();
         if (this.disabled || ['Enter', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].indexOf(e.code) < 0) {
             return;
         }
@@ -706,6 +706,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     newDate = new Date(Date.UTC(data.year, data.month, day));
                 }
                     else if(e.code === 'PageUp'){
+                        currentSelection.blur();
                         if(e.shiftKey){
                             this._activeYear = this._activeYear - 1;
                             var prevYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
@@ -760,6 +761,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                         }
                     }
                     else if(e.code === 'PageDown'){
+                        currentSelection.blur();
                         if(e.shiftKey){
                             this._activeYear = this._activeYear + 1;
                             var nextYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
