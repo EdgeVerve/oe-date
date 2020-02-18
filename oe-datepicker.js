@@ -634,6 +634,9 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         return dayWeekMap;
 
     }
+    /**
+     * Handles all keyboard navigations on datepicker
+     */
     _handleDateArrowNavigation(e) {
        // e.preventDefault();
         if (this.disabled || ['Enter', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].indexOf(e.code) < 0) {
