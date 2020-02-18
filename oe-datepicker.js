@@ -675,6 +675,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     } else if (e.code === 'ArrowDown') {
                         newDate = new Date(Date.UTC(data.year, data.month, day + 7));
                     }
+                     // On press of End key if last day of week is not of month then goto next available last day of week.
                     else if(e.code === 'End'){
                         if(dayWeekMap[weekIndex][6]){
                             day = parseInt(dayWeekMap[weekIndex][6].day);
@@ -687,6 +688,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                         }
                         newDate = new Date(Date.UTC(data.year, data.month, day));
                     }
+                    // On press of home key if first day of week is not of month then goto first available day of week.
                     else if(e.code === 'Home'){
                         day = parseInt(dayWeekMap[weekIndex][0].day);
                         if(!day){
@@ -705,8 +707,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     }
                     newDate = new Date(Date.UTC(data.year, data.month, day));
                 }
+                //On press of PageUp if there is no same day for previous month then goto next available day of the month.
                     else if(e.code === 'PageUp'){
                         currentSelection.blur();
+                        //On press of shift + PageUp goto the same day of previous year 
                         if(e.shiftKey){
                             this._activeYear = this._activeYear - 1;
                             var prevYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
@@ -760,8 +764,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                             newDate = new Date(Date.UTC(data.year, data.month, day));
                         }
                     }
+                    //On press of pageDown if there is no same day in next month then goto day nearer in that month.
                     else if(e.code === 'PageDown'){
                         currentSelection.blur();
+                        //On press of shift + pageDown goto the same day of next year 
                         if(e.shiftKey){
                             this._activeYear = this._activeYear + 1;
                             var nextYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
