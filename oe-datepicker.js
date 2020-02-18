@@ -658,6 +658,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         if (data && data.date && data.month && data.year) {
             var day = parseInt(data.date);
             if (day) {
+                // on Enter it select the current focused date
                 if (e.code === 'Enter') {
                     newDate = new Date(Date.UTC(data.year, data.month, data.date));
                     if (!this._isDateDisabled(newDate)) {
@@ -666,13 +667,20 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                         e.preventDefault();
                     }
                 } else {
+                    // on ArrowLeft goto to one day before
                     if (e.code === 'ArrowLeft') {
                         newDate = new Date(Date.UTC(data.year, data.month, day - 1));
-                    } else if (e.code === 'ArrowUp') {
+                    }
+                    // on ArrowUp goto same day previous week
+                    else if (e.code === 'ArrowUp') {
                         newDate = new Date(Date.UTC(data.year, data.month, day - 7));
-                    } else if (e.code === 'ArrowRight') {
+                    }
+                    //on ArrowRight goto next day.
+                    else if (e.code === 'ArrowRight') {
                         newDate = new Date(Date.UTC(data.year, data.month, day + 1));
-                    } else if (e.code === 'ArrowDown') {
+                    }
+                    //on ArrowDown goto next week same day.
+                    else if (e.code === 'ArrowDown') {
                         newDate = new Date(Date.UTC(data.year, data.month, day + 7));
                     }
                      // On press of End key if last day of week is not of month then goto next available last day of week.
@@ -822,10 +830,13 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                         }
                     }
                     var tryCount = 15;
+                    //on ArrowRight,ArrowDown,End,PageDown, if date is disabled or holiday then goto next available date
                     while (this._isDateDisabled(newDate) && tryCount > 0) {
                         if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'End' || e.code ==='PageDown') {
                             newDate.setUTCDate(newDate.getUTCDate() + 1);
-                        } else {
+                        }
+                         //on ArrowLeft,ArrowUp,Home,PageUp, if date is disabled or holiday then goto previous available date
+                        else {
                             newDate.setUTCDate(newDate.getUTCDate() - 1);
                         }
                         tryCount--;
