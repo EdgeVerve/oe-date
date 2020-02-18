@@ -839,7 +839,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         this.async(function(){
             currentSelection = targetDiv.querySelector('div.day.selected');
             currentSelection && currentSelection.focus();
-        },100);
+        },300);
     }
 
     /**
