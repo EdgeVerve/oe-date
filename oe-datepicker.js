@@ -65,13 +65,14 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     justify-content: center;
                     color: var(--dp-default-text);
                 }
-
+               
                 .month {
                     width: calc(25% - 6px);
                     height: 64px;
                 }
 
                 .day {
+                    min-width: 0px;
                     width: calc(14% - 6px);
                 }
 
@@ -82,7 +83,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                     line-height: 30px;
                     cursor: pointer;
                 }
-
+                
+                 .day:focus {
+                     outline:none;
+                 }
                 .day.selected span {
                     background-color: var(--dp-selected-bg);
                     color: var(--dp-selected-text);
@@ -165,24 +169,24 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             </template>
 
             <template is="dom-if" if="{{_equals(showing,'month')}}">
-                <div data-month$="{{month.number}}" data-year$="{{month.year}}">
+                <div role="application" data-month$="{{month.number}}" data-year$="{{month.year}}">
                 <div class="month-year-bar">
                     <paper-icon-button aria-label="Previous month" id="mprev" icon="chevron-left" on-tap="_prevMonth"></paper-icon-button>
                     <paper-button id="mmain" on-tap="_showYear" class="title-text" aria-label$="{{month.name}}, open month selector" area-pressed="false" >{{month.name}}</paper-button>
                     <paper-icon-button aria-label="Next month" id="mnext" icon="chevron-right" on-tap="_nextMonth"></paper-icon-button>
                 </div>
-                <div class="items-area"  on-keydown="_handleDateArrowNavigation" aria-label$="{{month.name}}, Use arrow keys to select date" tabindex$="{{_canTabInOnCalendar(month, value)}}">
+                <div class="items-area" on-keydown="_handleDateArrowNavigation" aria-label$="{{month.name}}, Use arrow keys to select date" tabindex$="{{_canTabInOnCalendar(month, value)}}">
                     <template is="dom-repeat" items="{{_weekDayNames}}">
-                    <div class="day title">{{item}}</div>
+                    <div class="day title" aria-label$="{{getName(index)}}">
+                    <span>{{item}}</span>
+                    </div>
                     </template>
 
                     <template is="dom-repeat" items="{{month.days}}" as="day">
 
-                    <div tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
+                    <div role="button" tabindex$="{{_canTabInOnDate(day, month, value)}}" aria-label$="{{day.day}} {{month.name}}" on-tap="_pickDate" on-dblclick="_doubleClick" class$="day {{_getDateClass(day, month, value)}}" disabled$="{{day.disabled}}" data-date$="{{day.n}}" data-month$="{{month.number}}" data-year$="{{month.year}}">
               <span>{{day.day}}</span>
             </div>
-
-
                     </template>
 
                 </div>
@@ -290,13 +294,17 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                 this.prepareMonth(this._activeMonth, this._activeYear);
             }
         } else {
-            var today = new Date();
-            this._activeMonth = today.getMonth();
-            this._activeYear = today.getFullYear();
-            this.prepareMonth(this._activeMonth, this._activeYear);
+            if(this.value !== undefined){
+                var today = new Date();
+                this._activeMonth = today.getMonth();
+                this._activeYear = today.getFullYear();
+                this.prepareMonth(this._activeMonth, this._activeYear);
+            }
         }
     }
-
+    getName(index){
+        return this._weekDayNamesLong[index];
+    }
     _computeLocaleYear(year) {
         this.__localeCache = this.__localeCache || {};
         this.__localeCache[this.locale] = this.__localeCache[this.locale] = { yearLocale: {} };
@@ -484,7 +492,37 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             number: curMonth,
             year: curYear
         };
+        
+        for (var i = 0; i < startPoint; i++) {
+            month.days[i] = {};
+        }
+        for (i = 1; i <= endPoint; i++) {
+            var thisDate = Date.UTC(curYear, curMonth, i);
 
+            month.days[startPoint + i - 1] = {
+                n: i,
+                day: this.intl.day(thisDate),
+                disabled: this._isDateDisabled(thisDate)
+            };
+        }
+        
+        this.set('month', month);
+    }
+    __prepareMonth(curMonth, curYear) {
+        if (!this.intl || typeof curMonth === 'undefined' || typeof curYear === 'undefined') {
+            return;
+        }
+        var date = new Date(Date.UTC(curYear, curMonth, 1));
+        var startPoint = (date.getUTCDay() - this.startOfWeek + 7) % 7;
+        date = new Date(curYear, curMonth + 1, 0);
+        var endPoint = date.getDate();
+        var month = {
+            days: new Array(startPoint + endPoint),
+            name: this.intl.month_name_year(date),
+            number: curMonth,
+            year: curYear
+        };
+        
         for (var i = 0; i < startPoint; i++) {
             month.days[i] = {};
         }
@@ -498,7 +536,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             };
         }
 
-        this.set('month', month);
+        return month;
     }
 
     /**
@@ -583,17 +621,47 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         this.set('decadeYears', years);
         this.set('showing', 'decade');
     }
+    monthToMap(month){
+        var dayWeekMap = [];
+        month.days.forEach((d,i) => {
+            let week = Math.floor(i/7);
+            let day = i%7;
+            if(!dayWeekMap[week]){
+                dayWeekMap[week] = [];
+            }
+        dayWeekMap[week][day] = d;
+        });
+        return dayWeekMap;
+
+    }
+    /**
+     * Handles all keyboard navigations on datepicker
+     */
     _handleDateArrowNavigation(e) {
-        if (this.disabled || ['Enter', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].indexOf(e.code) < 0) {
+       // e.preventDefault();
+        if (this.disabled || ['Enter', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].indexOf(e.code) < 0) {
             return;
         }
+        var dayIndex,weekIndex;
         var targetDiv = e.currentTarget;
         var newDate;
+        var isValid = false;
         var currentSelection = targetDiv.querySelector('div.day.selected');
         var data = currentSelection && currentSelection.dataset;
+        var month = this.__prepareMonth(this._activeMonth, this._activeYear);
+        var dayWeekMap = this.monthToMap(month);
+        dayWeekMap.forEach((elem,wIndex) => {
+            elem.forEach((ele,dIndex) => {
+                if(data.date === ele.day){
+                    weekIndex = wIndex;
+                    dayIndex = dIndex;
+                }
+            })
+        });
         if (data && data.date && data.month && data.year) {
             var day = parseInt(data.date);
             if (day) {
+                // on Enter it select the current focused date
                 if (e.code === 'Enter') {
                     newDate = new Date(Date.UTC(data.year, data.month, data.date));
                     if (!this._isDateDisabled(newDate)) {
@@ -602,20 +670,176 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
                         e.preventDefault();
                     }
                 } else {
+                    // on ArrowLeft goto to one day before
                     if (e.code === 'ArrowLeft') {
                         newDate = new Date(Date.UTC(data.year, data.month, day - 1));
-                    } else if (e.code === 'ArrowUp') {
+                    }
+                    // on ArrowUp goto same day previous week
+                    else if (e.code === 'ArrowUp') {
                         newDate = new Date(Date.UTC(data.year, data.month, day - 7));
-                    } else if (e.code === 'ArrowRight') {
+                    }
+                    //on ArrowRight goto next day.
+                    else if (e.code === 'ArrowRight') {
                         newDate = new Date(Date.UTC(data.year, data.month, day + 1));
-                    } else if (e.code === 'ArrowDown') {
+                    }
+                    //on ArrowDown goto next week same day.
+                    else if (e.code === 'ArrowDown') {
                         newDate = new Date(Date.UTC(data.year, data.month, day + 7));
                     }
+                     // On press of End key if last day of week is not of month then goto next available last day of week.
+                    else if(e.code === 'End'){
+                        if(dayWeekMap[weekIndex][6]){
+                            day = parseInt(dayWeekMap[weekIndex][6].day);
+                        }
+                        else {
+                            var m = this.__prepareMonth(this._activeMonth + 1, this._activeYear);
+                            var mMap = this.monthToMap(m);
+                            day = parseInt(mMap[0][6].day);
+                            this.prepareMonth(this._activeMonth + 1, this._activeYear);
+                        }
+                        newDate = new Date(Date.UTC(data.year, data.month, day));
+                    }
+                    // On press of home key if first day of week is not of month then goto first available day of week.
+                    else if(e.code === 'Home'){
+                        day = parseInt(dayWeekMap[weekIndex][0].day);
+                        if(!day){
+                            var m = this.__prepareMonth(this._activeMonth - 1, this._activeYear);
+                            var mMap = this.monthToMap(m);
+                            mMap.forEach((elem,wIndex) => {
+                                elem.forEach((ele,dIndex) => {
+                                    if(ele.day){
+                                        weekIndex = wIndex;
+                                        dayIndex = dIndex;
+                                    }
+                                })
+                            });
+                            day = parseInt(mMap[weekIndex][0].day);
+                            this.prepareMonth(this._activeMonth - 1, this._activeYear);
+                    }
+                    newDate = new Date(Date.UTC(data.year, data.month, day));
+                }
+                //On press of PageUp if there is no same day for previous month then goto next available day of the month.
+                    else if(e.code === 'PageUp'){
+                        currentSelection.blur();
+                        //On press of shift + PageUp goto the same day of previous year 
+                        if(e.shiftKey){
+                            this._activeYear = this._activeYear - 1;
+                            var prevYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
+                            var prevYearMonthMap = this.monthToMap(prevYearMonth); 
+                            if(prevYearMonthMap[weekIndex] && prevYearMonthMap[weekIndex][dayIndex] && prevYearMonthMap[weekIndex][dayIndex].day){
+                                day = parseInt(prevYearMonthMap[weekIndex][dayIndex].day);
+                            }
+                            else {
+                                prevYearMonthMap.find((elem,wIndex) => {
+                                    elem.find((ele,dIndex) => {
+                                        if(ele.day && !ele.disabled){
+                                            weekIndex = wIndex;
+                                            dayIndex = dIndex;
+                                            if(day < 15){
+                                                isValid = true;
+                                            }
+                                        }
+                                        return isValid;
+                                    })
+                                    return isValid;
+                                });
+                                day = parseInt(prevYearMonthMap[weekIndex][dayIndex].day);
+                            }
+                            this.prepareMonth(this._activeMonth, this._activeYear);
+                            newDate = new Date(Date.UTC(data.year, data.month, day));
+                        }
+                        else {
+                            this._activeMonth = this._activeMonth - 1;
+                            var prevMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
+                            var prevMonthMap = this.monthToMap(prevMonth); 
+                            if(prevMonthMap[weekIndex] && prevMonthMap[weekIndex][dayIndex] && prevMonthMap[weekIndex][dayIndex].day){
+                                day = parseInt(prevMonthMap[weekIndex][dayIndex].day);
+                            }
+                            else {
+                                prevMonthMap.find((elem,wIndex) => {
+                                    elem.find((ele,dIndex) => {
+                                        if(ele.day && !ele.disabled){
+                                            weekIndex = wIndex;
+                                            dayIndex = dIndex;
+                                            if(day < 15){
+                                                isValid = true;
+                                            }
+                                        }
+                                        return isValid;
+                                    })
+                                    return isValid;
+                                });
+                                day = parseInt(prevMonthMap[weekIndex][dayIndex].day);
+                            }
+                            this.prepareMonth(this._activeMonth, this._activeYear);
+                            newDate = new Date(Date.UTC(data.year, data.month, day));
+                        }
+                    }
+                    //On press of pageDown if there is no same day in next month then goto day nearer in that month.
+                    else if(e.code === 'PageDown'){
+                        currentSelection.blur();
+                        //On press of shift + pageDown goto the same day of next year 
+                        if(e.shiftKey){
+                            this._activeYear = this._activeYear + 1;
+                            var nextYearMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
+                            var nextYearMonthMap = this.monthToMap(nextYearMonth); 
+                            if(nextYearMonthMap[weekIndex] && nextYearMonthMap[weekIndex][dayIndex] && nextYearMonthMap[weekIndex][dayIndex].day){
+                                day = parseInt(nextYearMonthMap[weekIndex][dayIndex].day);
+                            }
+                            else {
+                                nextYearMonthMap.find((elem,wIndex) => {
+                                    elem.find((ele,dIndex) => {
+                                        if(ele.day && !ele.disabled){
+                                            weekIndex = wIndex;
+                                            dayIndex = dIndex;
+                                            if(day < 15){
+                                                isValid = true;
+                                            }
+                                        }
+                                        return isValid;
+                                    })
+                                    return isValid;
+                                });
+                                day = parseInt(nextYearMonthMap[weekIndex][dayIndex].day);
+                            }
+                            this.prepareMonth(this._activeMonth, this._activeYear);
+                            newDate = new Date(Date.UTC(data.year, data.month, day));
+                        }
+                        else {
+                            this._activeMonth = this._activeMonth + 1;
+                            var nextMonth = this.__prepareMonth(this._activeMonth, this._activeYear);
+                            var nextMonthMap = this.monthToMap(nextMonth); 
+                            if(nextMonthMap[weekIndex] && nextMonthMap[weekIndex][dayIndex] && nextMonthMap[weekIndex][dayIndex].day){
+                                day = parseInt(nextMonthMap[weekIndex][dayIndex].day);
+                            }
+                            else {
+                                nextMonthMap.find((elem,wIndex) => {
+                                    elem.find((ele,dIndex) => {
+                                        if(ele.day && !ele.disabled){
+                                            weekIndex = wIndex;
+                                            dayIndex = dIndex;
+                                            if(day < 15){
+                                                isValid = true;
+                                            }
+                                        }
+                                        return isValid;
+                                    })
+                                    return isValid;
+                                });
+                                day = parseInt(nextMonthMap[weekIndex][dayIndex].day);
+                            }
+                            this.prepareMonth(this._activeMonth, this._activeYear);
+                            newDate = new Date(Date.UTC(data.year, data.month, day));
+                        }
+                    }
                     var tryCount = 15;
+                    //on ArrowRight,ArrowDown,End,PageDown, if date is disabled or holiday then goto next available date
                     while (this._isDateDisabled(newDate) && tryCount > 0) {
-                        if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+                        if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'End' || e.code ==='PageDown') {
                             newDate.setUTCDate(newDate.getUTCDate() + 1);
-                        } else {
+                        }
+                         //on ArrowLeft,ArrowUp,Home,PageUp, if date is disabled or holiday then goto previous available date
+                        else {
                             newDate.setUTCDate(newDate.getUTCDate() - 1);
                         }
                         tryCount--;
@@ -632,10 +856,10 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
             this.fire('selection-changed', this.getDetails(this.value));
             e.preventDefault();
         }
-        //this.async(function(){
-        currentSelection = targetDiv.querySelector('div.day.selected');
-        currentSelection && currentSelection.focus();
-        //});
+        this.async(function(){
+            currentSelection = targetDiv.querySelector('div.day.selected');
+            currentSelection && currentSelection.focus();
+        },300);
     }
 
     /**
@@ -654,7 +878,12 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
         for (var i = 0; i < this.startOfWeek; i++) {
             weekDayNames.push(weekDayNames.shift());
         }
+        var weekDayNamesLong = this.intl.weekDayNamesLong.slice(0);
+        for (var i = 0; i < this.startOfWeek; i++) {
+            weekDayNamesLong.push(weekDayNamesLong.shift());
+        }
         this.set('_weekDayNames', weekDayNames);
+        this.set('_weekDayNamesLong',weekDayNamesLong);
 
         this.set('_monthNames', this.intl.monthNames);
         this.prepareMonth(this._activeMonth, this._activeYear);

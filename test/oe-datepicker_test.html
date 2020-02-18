@@ -186,7 +186,76 @@
         expect(picker.decadeYears.shift()).to.equal(min);
         done();
       });
-
+      test('Pressing Home button changes the date to start of the week', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'Home');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection2;
+        expect(new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getDay()).to.equal(1);
+        done();
+      });
+      test('Pressing End button changes the date to end of the week', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'End');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection2;
+        expect(new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getDay()).to.equal(0);
+        done();
+      });
+      test('Pressing PageUp button changes the date to Prev month of the same day', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        var oldM = new Date(Date.UTC(currentSelection.dataset.year,currentSelection.dataset.month,currentSelection.dataset.date)).getMonth();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'PageUp');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        var newM = new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getMonth();
+        expect(newM).to.equal(oldM - 1);
+        done();
+      });
+      test('Pressing PageDown button changes the date to Next month of the same day', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        var oldM = new Date(Date.UTC(currentSelection.dataset.year,currentSelection.dataset.month,currentSelection.dataset.date)).getMonth();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'PageDown');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        var newM = new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getMonth();
+        expect(newM).to.equal(oldM + 1);
+        done();
+      });
+      test('Pressing Shift+PageDown button changes the date to Next Year of the same day', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        var oldY = new Date(Date.UTC(currentSelection.dataset.year,currentSelection.dataset.month,currentSelection.dataset.date)).getFullYear();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'PageDown', 'shift');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        var newY = new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getFullYear();
+        expect(newY).to.equal(oldY + 1);
+        done();
+      });
+      test('Pressing Shift+PageUp button changes the date to Prev Year of the same day', function (done) {
+        var value = new Date();
+        picker.set('value',value);
+        var currentSelection = picker.shadowRoot.querySelector('div.day.selected');
+        currentSelection.focus();
+        var oldY = new Date(Date.UTC(currentSelection.dataset.year,currentSelection.dataset.month,currentSelection.dataset.date)).getFullYear();
+        MockInteractions.pressAndReleaseKeyOn(currentSelection, 'PageUp', 'shift');
+        var currentSelection2 =  picker.shadowRoot.querySelector('div.day.selected');
+        var newY = new Date(Date.UTC(currentSelection2.dataset.year,currentSelection2.dataset.month,currentSelection2.dataset.date)).getFullYear();
+        expect(newY).to.equal(oldY - 1);
+        done();
+      });
     });
   </script>
 
