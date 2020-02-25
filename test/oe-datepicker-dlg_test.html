@@ -152,7 +152,7 @@
           var allDateElems = element.$.datePicker.shadowRoot.querySelectorAll('div[data-date][data-month][data-year]');
           var randomElement = allDateElems[getRandomDate()];
           MockInteractions.tap(randomElement);
-          expect(element.date).to.equal(pad(randomElement.dataset.date, 2));
+          expect(pad(element.localValue.getDate(),2)).to.equal(pad(randomElement.dataset.date, 2));
           expect(element.$.dialog.opened).to.equal(true);
           done();
         }, 100);
