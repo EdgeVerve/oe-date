@@ -382,7 +382,7 @@ class OeDatepicker extends LegacyElementMixin(PolymerElement) {
      * @return {Object} Containing information like 'day','month',etc.
      */
     getDetails(dValue) {
-        if (!dValue) {
+        if (!dValue || typeof dValue.getTime === "function") {
             dValue = new Date();
             dValue = new Date(Date.UTC(dValue.getFullYear(), dValue.getMonth(), dValue.getDate(), 0, 0, 0));
         }
