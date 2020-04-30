@@ -8,9 +8,9 @@
   <title>oe-datetime test</title>
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
-    <script src="../node_modules/chai/chai.js"></script>
-    <script src="../node_modules/mocha/mocha.js"></script>
-    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
+  <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
 
   <script type="module" src="../oe-datetime.js"></script>
 </head>
@@ -34,9 +34,9 @@
   </test-fixture>
 
   <test-fixture id="drop-down">
-      <template>
-        <oe-datetime label="dropdown" min="today" max="1w" dropdown-mode></oe-datetime>
-      </template>
+    <template>
+      <oe-datetime label="dropdown" min="today" max="1w" dropdown-mode></oe-datetime>
+    </template>
   </test-fixture>
 
   <script type="module">
@@ -51,6 +51,7 @@
       return new DomApi(node);
     }
 
+    suite('oe-datetime', function(){
     suite('basic', function () {
       var input;
       setup(function(done){
@@ -574,6 +575,141 @@
         });
 
     });
+  
+    suite('reference timezone tests', function(){
+
+      /* subtracting local tz offset from testing to make sure we endup on different date for testing purpose */
+      let referenceTimezone = (((new Date()).getHours()<12)?-720:720) - ((new Date()).getTimezoneOffset());
+      let refDate = new Date();
+      refDate.setMinutes(refDate.getMinutes() + (referenceTimezone +((new Date()).getTimezoneOffset())));
+      refDate = new Date(Date.UTC(refDate.getFullYear(), refDate.getMonth(), refDate.getDate()));
+
+      setup(function(){
+        window.OEUtils = window.OEUtils || {};
+        window.OEUtils.componentDefaults = window.OEUtils.componentDefaults || {};
+        window.OEUtils.componentDefaults["oe-datetime"] = OEUtils.componentDefaults["oe-datetime"] || {};
+        window.OEUtils.componentDefaults["oe-datetime"].referenceTimezone = referenceTimezone;
+      });
+      teardown(function(){
+        delete window.OEUtils.componentDefaults["oe-datetime"].referenceTimezone;
+      });
+
+      // test('initial value is populated in business-timezone', function(){
+      //   let input = fixture('init');
+      //   expect(input.value).to.deep.equal(refDate);
+      // });
+
+      test('shorthand are calculated relative to date in business-timezone', function(done){
+        let control = fixture('basic');
+        flush(function(){
+          let input = control.$.display;
+          MockInteractions.focus(input);
+          input.inputElement.value = '1w';
+          input.fire('change');
+          MockInteractions.blur(input);
+
+          forceXIfStamp(input);
+
+          let expected = new Date(refDate.getUTCFullYear(), refDate.getUTCMonth(), refDate.getUTCDate());
+          /*local TZ 00:00 */
+          expected.setDate(expected.getDate()+7);
+          flush(function(){
+            expect(control.value).to.deep.equal(expected);
+            done();
+          });
+        });
+      });
+
+      test('date dialog shows today in business-timezone by default', function (done) {
+        var input = fixture('basic');
+        var btn = input.shadowRoot.querySelector('.date-button');
+        MockInteractions.tap(btn);
+        flush(function () {
+          var dialog = input.shadowRoot.querySelector('#_picker');
+          expect(dialog.localValue).to.deep.equal(refDate);
+          done();
+        }, 200);
+      });
+
+      test('date picker shows today in business-timezone by default', function (done) {
+        var input = fixture('drop-down');
+        var btn = input.shadowRoot.querySelector('.date-button');
+        MockInteractions.tap(btn);
+        flush(function () {
+          var datePicker = input.shadowRoot.querySelector('#datePicker');
+          expect(input.value).to.not.exist;
+          expect(datePicker.value).to.deep.equal(refDate);
+          done();
+        }, 100);
+      });
+
+    });
+
+    suite('reference date tests', function(){
+
+      /* subtracting local tz offset from testing to make sure we endup on different date for testing purpose */
+      let refDate = new Date(Date.UTC(2019, 10, 15));
+
+      setup(function(){
+        window.OEUtils = window.OEUtils || {};
+        window.OEUtils.componentDefaults = window.OEUtils.componentDefaults || {};
+        window.OEUtils.componentDefaults["oe-datetime"] = OEUtils.componentDefaults["oe-datetime"] || {};
+        window.OEUtils.componentDefaults["oe-datetime"].referenceDate = refDate;
+      });
+      teardown(function(){
+        delete window.OEUtils.componentDefaults["oe-datetime"].referenceDate;
+      });
+
+      // test('initial value is populated in business-timezone', function(){
+      //   let input = fixture('init');
+      //   expect(input.value).to.deep.equal(refDate);
+      // });
+
+      test('shorthand are calculated relative to date in business-timezone', function(done){
+        let control = fixture('basic');
+        flush(function(){
+          let input = control.$.display;
+          MockInteractions.focus(input);
+          input.inputElement.value = '1w';
+          input.fire('change');
+          MockInteractions.blur(input);
+
+          forceXIfStamp(input);
+
+          let expected = new Date(refDate.getUTCFullYear(), refDate.getUTCMonth(), refDate.getUTCDate());
+          /*local TZ 00:00 */
+          expected.setDate(expected.getDate()+7);
+          flush(function(){
+            expect(control.value).to.deep.equal(expected);
+            done();
+          });
+        });
+      });
+
+      test('date dialog shows today in business-timezone by default', function (done) {
+        var input = fixture('basic');
+        var btn = input.shadowRoot.querySelector('.date-button');
+        MockInteractions.tap(btn);
+        flush(function () {
+          var dialog = input.shadowRoot.querySelector('#_picker');
+          expect(dialog.localValue).to.deep.equal(refDate);
+          done();
+        }, 200);
+      });
+
+      test('date picker shows today in business-timezone by default', function (done) {
+        var input = fixture('drop-down');
+        var btn = input.shadowRoot.querySelector('.date-button');
+        MockInteractions.tap(btn);
+        flush(function () {
+          var datePicker = input.shadowRoot.querySelector('#datePicker');
+          expect(input.value).to.not.exist;
+          expect(datePicker.value).to.deep.equal(refDate);
+          done();
+        }, 100);
+      });
+    });
+  });
   </script>
 
 </body>

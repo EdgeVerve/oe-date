@@ -2,7 +2,7 @@
   "name": "oe-date",
   "description": "oeCloud implemenetation of date picker with support for shortHand values",
   "main": "oe-date.js",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "scripts": {
     "test": "polymer test --module-resolution node --skip-selenium-install",
     "lint": "eslint .",

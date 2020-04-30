@@ -95,9 +95,9 @@
   </test-fixture>
 
   <test-fixture id="drop-down">
-      <template>
-        <oe-date label="dropdown" min="today" max="1w" dropdown-mode></oe-date>
-      </template>
+    <template>
+      <oe-date label="dropdown" min="today" max="1w" dropdown-mode></oe-date>
+    </template>
   </test-fixture>
 
   <script type="module">
@@ -118,639 +118,911 @@
     function getDom(node) {
       return new DomApi(node);
     }
-    suite('formatting', function () {
 
-      test('default format is DD MMM YYYY', function () {
-        var input = fixture('basic');
-        var value = new Date(Date.UTC(2016, 0, 29));
-        input.set('value', value);
-        assert.equal(input.$.display.value, '29 Jan 2016', 'value formatted with default DD MMM YYYY');
-      });
+    suite('oe-date', function(){
 
-      test('setting format value alters formatting', function () {
-        var input = fixture('DD_MM_YYYY');
-        var value = new Date(Date.UTC(2016, 1, 1));
-        input.set('value', value);
-        assert.equal(input.inputElement.value, '01 02 2016', 'value formatted with custom format');
-      });
+      suite('formatting', function () {
 
-      test('when format is set dynamically, the formatted value changes', function () {
-        var input = fixture('DD_MM_YYYY');
-        var value = new Date(Date.UTC(2019, 9, 22));
-        input.set('value', value);
-        assert.equal(input.inputElement.value, '22 10 2019', 'value formatted with custom format');
+        test('default format is DD MMM YYYY', function () {
+          var input = fixture('basic');
+          var value = new Date(Date.UTC(2016, 0, 29));
+          input.set('value', value);
+          assert.equal(input.$.display.value, '29 Jan 2016', 'value formatted with default DD MMM YYYY');
+        });
 
-        input.set('format', 'DD MMM Y');
-        assert.equal(input.inputElement.value, '22 Oct 2019', 'value re-formatted with custom format');
-      });
-    });
+        test('setting format value alters formatting', function () {
+          var input = fixture('DD_MM_YYYY');
+          var value = new Date(Date.UTC(2016, 1, 1));
+          input.set('value', value);
+          assert.equal(input.inputElement.value, '01 02 2016', 'value formatted with custom format');
+        });
 
-    suite('initial values', function () {
+        test('when format is set dynamically, the formatted value changes', function () {
+          var input = fixture('DD_MM_YYYY');
+          var value = new Date(Date.UTC(2019, 9, 22));
+          input.set('value', value);
+          assert.equal(input.inputElement.value, '22 10 2019', 'value formatted with custom format');
 
-      test('date string in init, sets value and formatted string', function () {
-        var input = fixture('29Jan2016-DD_MM_Y');
-        assert.equal(input.$.display.value, '29 01 2016', 'initial value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), 29, 'date component');
-        assert.equal(input.value.getUTCMonth(), 0, 'month component');
-        assert.equal(input.value.getUTCFullYear(), 2016, 'year component');
-      });
-
-      test('date shorthand in init, sets value and formatted string', function () {
-        var input = fixture('today-DD_MM_Y');
-        var today = new Date();
-        assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
-          today.getFullYear(), 'initial value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
-      });
-    });
-
-    suite('parsing', function () {
-
-      test('shorthands today', function () {
-        var today = new Date();
-        var input = fixture('DD_MM_YYYY');
-
-        input.$.display.set('value', 't');
-        input.inputElement.fire('change');
-
-        assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
-          today.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
-
-        input.$.display.set('value', 'TOD');
-        input.inputElement.fire('change');
-
-        assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
-          today.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
-
-        input.$.display.set('value', 'today');
-        input.inputElement.fire('change');
-
-        assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
-          today.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
-      });
-
-      test('shorthands weeks', function () {
-        var valueDate = new Date();
-        var input = fixture('DD_MM_YYYY');
-
-        input.$.display.set('value', '1w');
-        input.inputElement.fire('change');
-
-        valueDate.setDate(valueDate.getDate() + 7);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-
-        input.$.display.set('value', '3w');
-        input.inputElement.fire('change');
-
-        //adding 2 weeks to previous
-        valueDate.setDate(valueDate.getDate() + 14);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-      });
-
-      test('shorthands months', function () {
-        var valueDate = new Date();
-        var input = fixture('DD_MM_YYYY');
-
-        input.$.display.set('value', '1m');
-        input.inputElement.fire('change');
-
-        valueDate.setMonth(valueDate.getMonth() + 1);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-
-        input.$.display.set('value', '6m');
-        input.inputElement.fire('change');
-
-        //adding 2 months to previous
-        valueDate.setMonth(valueDate.getMonth() + 5);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-      });
-
-      test('shorthands years', function () {
-        var valueDate = new Date();
-        var input = fixture('DD_MM_YYYY');
-
-        input.$.display.set('value', '1y');
-        input.inputElement.fire('change');
-
-        valueDate.setFullYear(valueDate.getFullYear() + 1);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-
-        input.$.display.set('value', '4y');
-        input.inputElement.fire('change');
-
-        //adding 3 years to previous
-        valueDate.setFullYear(valueDate.getFullYear() + 3);
-
-        assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
-          2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
-        assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
-        assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
-        assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
-      });
-
-      test('shorthands expand date in UTC', function () {
-        var today = new Date();
-        var valueDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-
-        var input = fixture('basic');
-
-        input.$.display.set('value', '1w');
-        input.inputElement.fire('change');
-
-        valueDate.setUTCDate(valueDate.getUTCDate() + 7);
-
-        assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
-      });
-
-      //TODO Add test cases for absolute date being entered
-
-      test('format is considered for date parsing', function () {
-        var today = new Date();
-        var valueDate = new Date(Date.UTC(2017, 10, 23));
-
-        var input = fixture('MM_DD_YYYY');
-
-        input.$.display.set('value', '11-23-2017');
-        input.inputElement.fire('change');
-
-        expect(input.invalid).to.equal(false);
-        expect(input.errorMessage).to.be.not.ok;
-        assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
-      });
-    });
-
-    suite('validation', function () {
-
-      test('for required element, invalid and errorMessage should not be set by default', function () {
-        var input = fixture('required');
-        assert.isFalse(input.invalid, 'invalid is false');
-        assert.isUndefined(input.errorMessage, 'errorMessage is undefined');
-        var error = getDom(input.$.display.root).querySelector('paper-input-error');
-        assert.isFalse(error.invalid, 'invalid is false');
-      });
-
-
-      test('invalid attribute updated for required field', function (done) {
-        var input = fixture('required');
-
-        //MockInteractions.focus(input.inputElement);
-        //MockInteractions.blur(input.inputElement);
-        flush(function(){
-          forceXIfStamp(input);
-          input.validate();
-          var error = getDom(input.$.display.root).querySelector('paper-input-error');
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'valueMissing');
-
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'valueMissing');
-
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'valueMissing');
-
-
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '3w');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(error.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          done();
+          input.set('format', 'DD MMM Y');
+          assert.equal(input.inputElement.value, '22 Oct 2019', 'value re-formatted with custom format');
         });
       });
 
+      suite('initial values', function () {
 
-      test('dateFormat Error, if input is not valid', function (done) {
-        var input = fixture('basic');
-       
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', 'foobar');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-          flush(function(){
-          forceXIfStamp(input);
-          //input.$.display.validate();
-          var error = getDom(input.$.display.root).querySelector('paper-input-error');
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'dateFormat');
+        test('date string in init, sets value and formatted string', function () {
+          var input = fixture('29Jan2016-DD_MM_Y');
+          assert.equal(input.$.display.value, '29 01 2016', 'initial value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), 29, 'date component');
+          assert.equal(input.value.getUTCMonth(), 0, 'month component');
+          assert.equal(input.value.getUTCFullYear(), 2016, 'year component');
+        });
 
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'dateFormat');
-
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'dateFormat');
-
-
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '3w');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(error.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          done();
+        test('date shorthand in init, sets value and formatted string', function () {
+          var input = fixture('today-DD_MM_Y');
+          var today = new Date();
+          assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
+            today.getFullYear(), 'initial value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
         });
       });
 
+      suite('parsing', function () {
 
-      test('rangeUnderflow Error, if input is less than min', function (done) {
-        var input = fixture('mintoday');
-        flush(function(){
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '-1d');
+        test('shorthands today', function () {
+          var today = new Date();
+          var input = fixture('DD_MM_YYYY');
+
+          input.$.display.set('value', 't');
           input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-          
-          forceXIfStamp(input);
-          var error = getDom(input.$.display.root).querySelector('paper-input-error');
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeUnderflow');
 
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'rangeUnderflow');
+          assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
+            today.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
 
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeUnderflow');
+          input.$.display.set('value', 'TOD');
+          input.inputElement.fire('change');
 
+          assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
+            today.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
 
-          /* MIN Boundary Case*/
-          MockInteractions.focus(input.inputElement);
           input.$.display.set('value', 'today');
           input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
 
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-
-          /* MIN Valid Value */
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '1w');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(error.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          done();
-          });
-     
-    });
-
-      test('rangeOverflow Error, if input is more than max', function (done) {
-        var input = fixture('max3m');
-
-        flush(function(){
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '6m');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-         
-          forceXIfStamp(input);
-          //input.$.display.validate();
-          var error = getDom(input.$.display.root).querySelector('paper-input-error');
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeOverflow');
-
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'rangeOverflow');
-
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeOverflow');
-
-
-          /* MAX Boundary Case*/
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '3m');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-
-          /* MAX Valid Value */
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '1w');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(error.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          done();
+          assert.equal(input.$.display.value, pad(today.getDate(), 2) + ' ' + pad(today.getMonth() + 1, 2) + ' ' +
+            today.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), today.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), today.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), today.getFullYear(), 'year component');
         });
-     
-      });
 
-      test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function (done) {
-        var input = fixture('range_2d_3m');
+        test('shorthands weeks', function () {
+          var valueDate = new Date();
+          var input = fixture('DD_MM_YYYY');
 
-        flush(function(){
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '6m');
+          input.$.display.set('value', '1w');
           input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
 
-          forceXIfStamp(input);
-          //input.validate();
-          var error = getDom(input.$.display.root).querySelector('paper-input-error');
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeOverflow');
+          valueDate.setDate(valueDate.getDate() + 7);
 
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'rangeOverflow');
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
 
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeOverflow');
-
-
-          /* MAX Boundary Case*/
-          MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '3m');
-          input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
-
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-
-          /* Valid Value */
-          MockInteractions.focus(input.inputElement);
           input.$.display.set('value', '3w');
           input.inputElement.fire('change');
-          MockInteractions.blur(input.inputElement);
 
-          forceXIfStamp(input);
+          //adding 2 weeks to previous
+          valueDate.setDate(valueDate.getDate() + 14);
+
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+        });
+
+        test('shorthands months', function () {
+          var valueDate = new Date();
+          var input = fixture('DD_MM_YYYY');
+
+          input.$.display.set('value', '1m');
+          input.inputElement.fire('change');
+
+          valueDate.setMonth(valueDate.getMonth() + 1);
+
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+
+          input.$.display.set('value', '6m');
+          input.inputElement.fire('change');
+
+          //adding 2 months to previous
+          valueDate.setMonth(valueDate.getMonth() + 5);
+
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+        });
+
+        test('shorthands years', function () {
+          var valueDate = new Date();
+          var input = fixture('DD_MM_YYYY');
+
+          input.$.display.set('value', '1y');
+          input.inputElement.fire('change');
+
+          valueDate.setFullYear(valueDate.getFullYear() + 1);
+
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+
+          input.$.display.set('value', '4y');
+          input.inputElement.fire('change');
+
+          //adding 3 years to previous
+          valueDate.setFullYear(valueDate.getFullYear() + 3);
+
+          assert.equal(input.$.display.value, pad(valueDate.getDate(), 2) + ' ' + pad(valueDate.getMonth() + 1,
+            2) + ' ' + valueDate.getFullYear(), 'value formatted as string properly');
+          assert.equal(input.value.getUTCDate(), valueDate.getDate(), 'date component');
+          assert.equal(input.value.getUTCMonth(), valueDate.getMonth(), 'month component');
+          assert.equal(input.value.getUTCFullYear(), valueDate.getFullYear(), 'year component');
+        });
+
+        test('shorthands expand date in UTC', function () {
+          var today = new Date();
+          var valueDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+          var input = fixture('basic');
+
+          input.$.display.set('value', '1w');
+          input.inputElement.fire('change');
+
+          valueDate.setUTCDate(valueDate.getUTCDate() + 7);
+
+          assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
+        });
+
+        //TODO Add test cases for absolute date being entered
+
+        test('format is considered for date parsing', function () {
+          var today = new Date();
+          var valueDate = new Date(Date.UTC(2017, 10, 23));
+
+          var input = fixture('MM_DD_YYYY');
+
+          input.$.display.set('value', '11-23-2017');
+          input.inputElement.fire('change');
+
+          expect(input.invalid).to.equal(false);
+          expect(input.errorMessage).to.be.not.ok;
+          assert.equal(input.value.getTime(), valueDate.getTime(), 'UTC Milliseconds must be equal');
+        });
+      });
+
+      suite('validation', function () {
+
+        test('for required element, invalid and errorMessage should not be set by default', function () {
+          var input = fixture('required');
           assert.isFalse(input.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+          assert.isUndefined(input.errorMessage, 'errorMessage is undefined');
+          var error = getDom(input.$.display.root).querySelector('paper-input-error');
           assert.isFalse(error.invalid, 'invalid is false');
-          assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+        });
 
+
+        test('invalid attribute updated for required field', function (done) {
+          var input = fixture('required');
+
+          //MockInteractions.focus(input.inputElement);
+          //MockInteractions.blur(input.inputElement);
+          flush(function(){
+            forceXIfStamp(input);
+            input.validate();
+            var error = getDom(input.$.display.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'valueMissing');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'valueMissing');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'valueMissing');
+
+
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '3w');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            done();
+          });
+        });
+
+
+        test('dateFormat Error, if input is not valid', function (done) {
+          var input = fixture('basic');
+        
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', 'foobar');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+            flush(function(){
+            forceXIfStamp(input);
+            //input.$.display.validate();
+            var error = getDom(input.$.display.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'dateFormat');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'dateFormat');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'dateFormat');
+
+
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '3w');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            done();
+          });
+        });
+
+
+        test('rangeUnderflow Error, if input is less than min', function (done) {
+          var input = fixture('mintoday');
+          flush(function(){
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '-1d');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+            
+            forceXIfStamp(input);
+            var error = getDom(input.$.display.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeUnderflow');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'rangeUnderflow');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeUnderflow');
+
+
+            /* MIN Boundary Case*/
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', 'today');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+
+            /* MIN Valid Value */
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '1w');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            done();
+            });
+      
+      });
+
+        test('rangeOverflow Error, if input is more than max', function (done) {
+          var input = fixture('max3m');
+
+          flush(function(){
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '6m');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+          
+            forceXIfStamp(input);
+            //input.$.display.validate();
+            var error = getDom(input.$.display.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeOverflow');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'rangeOverflow');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeOverflow');
+
+
+            /* MAX Boundary Case*/
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '3m');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+
+            /* MAX Valid Value */
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '1w');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            done();
+          });
+      
+        });
+
+        test('rangeOverflow/rangeUnderflow Error, if input is not within specified range', function (done) {
+          var input = fixture('range_2d_3m');
+
+          flush(function(){
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '6m');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            //input.validate();
+            var error = getDom(input.$.display.root).querySelector('paper-input-error');
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeOverflow');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'rangeOverflow');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeOverflow');
+
+
+            /* MAX Boundary Case*/
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '3m');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+
+            /* Valid Value */
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '3w');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'errorMessage is not defined');
+            assert.isFalse(error.invalid, 'invalid is false');
+            assert.isUndefined(input.errorMessage, 'errorMessage is not defined');
+
+
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', 'tom');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+
+            forceXIfStamp(input);
+            //input.$.display.validate();
+            var error = getDom(input.$.display.root).querySelector('paper-input-error'); // eslint-disable-line no-redeclare
+            assert.ok(error, 'paper-input-error exists');
+            assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            assert.isTrue(error.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeUnderflow');
+
+            assert.isTrue(input.$.display.invalid, 'invalid is true');
+            assert.equal(input.$.display.errorMessage, 'rangeUnderflow');
+
+            assert.isTrue(input.invalid, 'invalid is true');
+            assert.equal(input.errorMessage, 'rangeUnderflow');
+
+
+            /* MIN Boundary Case*/
+            MockInteractions.focus(input.inputElement);
+            input.$.display.set('value', '2d');
+            input.inputElement.fire('change');
+            MockInteractions.blur(input.inputElement);
+            forceXIfStamp(input);
+            assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
+            assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
+            assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
+            done();
+          });
+        });
+
+        test('holidays Error, if the date value falls on a holiday',function(done){
+          var input = fixture("holiday");
+          flush(function(){
+            assert.equal(input.holidays.length, 2);
+            var holiday = new Date("01-01-2019");
+            input.set('value',holiday);
+            flush(function(){
+              assert.equal(input.invalid, true);
+              assert.equal(input.errorMessage,"dateIsHoliday");
+              done();
+            });
+          }); 
+        });
+      });
+
+      suite('date-picker', function () {
+
+        test('tapping date button opens date picker', function (done) {
+          var input = fixture('basic');
+          input.set('dialogAttached',true);
+          flush(function() {
+            var dialog = input.shadowRoot.querySelector('#_picker').$.dialog;
+            assert.equal(getComputedStyle(dialog).display, 'none');
+            var btn = input.shadowRoot.querySelector('.date-button');
+            MockInteractions.tap(btn);
+            flush(function () {
+              assert.notEqual(getComputedStyle(dialog).display, 'none');
+              done();
+            }, 200);
+          }, 100);
+        });
+
+
+        test('picks up date from date picker', function (done) {
+          var input = fixture('basic');
+          input.set('dialogAttached',true);
+          flush(function() {
+            var picker = input.shadowRoot.querySelector('#_picker');
+            var dialog = picker.$.dialog;
+            assert.equal(getComputedStyle(dialog).display, 'none');
+            var btn = input.shadowRoot.querySelector('.date-button');
+            MockInteractions.tap(btn);
+            flush(function () {
+              assert.notEqual(getComputedStyle(dialog).display, 'none');
+              picker.$.datePicker.value = new Date();
+              picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
+                flush(function () {
+                  assert.isDefined(input.value);
+                  done();
+                });
+              });
+              MockInteractions.tap(picker.$.okBtn);
+            }, 100);
+          }, 100);
+        });
+      });
+
+      suite('dropdown-mode', function () {
+        var input;
+        setup(function(done){
+          input = fixture('drop-down');
+          flush(function(){
+            done();
+          })
+        })
+
+        test('tapping date button opens date picker as dropdown', function (done) {
+          var btn = input.shadowRoot.querySelector('.date-button');
+          assert.equal(input.expand, false);
+          MockInteractions.tap(btn);
+          flush(function () {
+            assert.equal(input.expand, true);
+            done();
+          }, 100);
+        });
+
+        test('focusing opens date picker as dropdown', function (done) {
+          var btn = input.shadowRoot.querySelector('.date-button');
+          assert.equal(input.expand, false);
+          input.set('openOnFocus',true);
+          input.$.display.fire('focus');
+          flush(function () {
+            assert.equal(input.expand, true);
+            done();
+          }, 100);
+        });
+
+        test('picks up date from dropdown date picker', function (done) {
+          var btn = input.shadowRoot.querySelector('.date-button');
+
+          MockInteractions.tap(btn);
+          flush(function () {
+            
+            var datePicker = input.shadowRoot.querySelector('#datePicker');
+            assert.equal(input.expand, true);
+            datePicker.value = new Date();
+            MockInteractions.tap(input.shadowRoot.querySelector('#cancelBtn'));
+            flush(function(){
+              assert.equal(input.expand, false);
+              assert.equal(input.value, undefined);
+              MockInteractions.tap(btn);
+              flush(function(){
+                datePicker.value = new Date();
+                MockInteractions.tap(input.shadowRoot.querySelector('#okBtn'));
+                assert.equal(input.value,datePicker.value);
+                done();
+              });
+            });
+          }, 100);
+        });
+      });
+
+      suite('oe-events', function() {
+
+        test('when date is typed, oe-field-ok triggers only once', function(done){
+          var input = fixture('basic');
+          input.set('fieldId', 'onlyOnce');
+
+          input.addEventListener('oe-field-ok', function(evt){
+            expect(evt.detail.fieldId).to.equal('onlyOnce');
+            done();
+          });
 
           MockInteractions.focus(input.inputElement);
           input.$.display.set('value', 'tom');
           input.inputElement.fire('change');
           MockInteractions.blur(input.inputElement);
 
-          forceXIfStamp(input);
-          //input.$.display.validate();
-          var error = getDom(input.$.display.root).querySelector('paper-input-error'); // eslint-disable-line no-redeclare
-          assert.ok(error, 'paper-input-error exists');
-          assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
-          assert.isTrue(error.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeUnderflow');
+        });
 
-          assert.isTrue(input.$.display.invalid, 'invalid is true');
-          assert.equal(input.$.display.errorMessage, 'rangeUnderflow');
+        test('when date is selected from dialog, oe-field-ok triggers only once', function(done){
+          var input = fixture('basic');
+          input.set('fieldId', 'onlyOnce');
 
-          assert.isTrue(input.invalid, 'invalid is true');
-          assert.equal(input.errorMessage, 'rangeUnderflow');
+          input.addEventListener('oe-field-ok', function(evt){
+            expect(evt.detail.fieldId).to.equal('onlyOnce');
+            done();
+          });
 
+          input.set('dialogAttached',true);
+          flush(function() {
+            var picker = input.shadowRoot.querySelector('#_picker');
+            var dialog = picker.$.dialog;
+            assert.equal(getComputedStyle(dialog).display, 'none');
+            var btn = input.shadowRoot.querySelector('.date-button');
+            MockInteractions.tap(btn);
+            flush(function () {
+              assert.notEqual(getComputedStyle(dialog).display, 'none');
+              picker.$.datePicker.value = new Date();
+              picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
+                flush(function () {
+                  assert.isDefined(input.value);
+                });
+              });
+              MockInteractions.tap(picker.$.okBtn);
+            }, 100);
+          }, 100);
+        });
 
-          /* MIN Boundary Case*/
+        test('change event is triggered (keyboard entry)', function(done){
+          var input = fixture('basic');
+          input.set('fieldId', 'myfield');
+
+          input.addEventListener('oe-field-changed', function(evt){
+            expect(evt.detail).to.deep.equal({fieldId: 'myfield', value: input.value});
+            done();
+          });
+
           MockInteractions.focus(input.inputElement);
-          input.$.display.set('value', '2d');
+          input.$.display.set('value', 'tom');
           input.inputElement.fire('change');
           MockInteractions.blur(input.inputElement);
-          forceXIfStamp(input);
-          assert.isFalse(input.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(input.$.display.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.$.display.errorMessage, 'Boundary Case, errorMessage is not defined');
-          assert.isFalse(error.invalid, 'Boundary Case, invalid is false');
-          assert.isUndefined(input.errorMessage, 'Boundary Case, errorMessage is not defined');
-          done();
+        });
+
+        test('change event is triggered (select using dialog)', function(done){
+          var input = fixture('basic');
+          input.set('fieldId', 'myfield');
+
+          input.addEventListener('oe-field-changed', function(evt){
+            expect(evt.detail).to.deep.equal({fieldId: 'myfield', value: input.value});
+            done();
+          });
+
+          input.set('dialogAttached',true);
+          flush(function() {
+            var picker = input.shadowRoot.querySelector('#_picker');
+            var dialog = picker.$.dialog;
+            assert.equal(getComputedStyle(dialog).display, 'none');
+            var btn = input.shadowRoot.querySelector('.date-button');
+            MockInteractions.tap(btn);
+            flush(function () {
+              assert.notEqual(getComputedStyle(dialog).display, 'none');
+              picker.$.datePicker.value = new Date();
+              picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
+                flush(function () {
+                  assert.isDefined(input.value);
+                });
+              });
+              MockInteractions.tap(picker.$.okBtn);
+            }, 100);
+          }, 100);
+
+        });
+
+        test('change event is triggered (dropdown picker)', function(done){
+          var input = fixture('drop-down');
+          input.set('fieldId', 'myfield');
+
+          input.addEventListener('oe-field-changed', function(evt){
+            expect(evt.detail).to.deep.equal({fieldId: 'myfield', value: input.value});
+            done();
+          });
+
+          flush(function() {
+            var btn = input.shadowRoot.querySelector('.date-button');
+            MockInteractions.tap(btn);
+            flush(function () {
+              var datePicker = input.shadowRoot.querySelector('#datePicker');
+              assert.equal(input.expand, true);
+              datePicker.value = new Date();
+              MockInteractions.tap(input.shadowRoot.querySelector('#cancelBtn'));
+              flush(function(){
+                assert.equal(input.expand, false);
+                assert.equal(input.value, undefined);
+                MockInteractions.tap(btn);
+                flush(function(){
+                  datePicker.value = new Date();
+                  MockInteractions.tap(input.shadowRoot.querySelector('#okBtn'));
+                  assert.equal(input.value,datePicker.value);
+                });
+              });
+            }, 100);
+
+          }, 100);
+
+        });
+
+        test('change event is NOT triggered if fieldid is missing', function(done){
+          var input = fixture('basic');
+
+          input.addEventListener('oe-field-changed', function(evt){
+            expect(true).to.be.false;
+            done();
+          });
+          MockInteractions.focus(input.inputElement);
+          input.$.display.set('value', 'tom');
+          input.inputElement.fire('change');
+          MockInteractions.blur(input.inputElement);
+
+          setTimeout(done, 2000);
+        });
+
+        test('change event is NOT triggered if value changes', function(done){
+          var input = fixture('basic');
+          input.set('fieldId', 'onlyValueChange');
+
+          input.addEventListener('oe-field-changed', function(evt){
+            expect(true).to.be.false;
+            done();
+          });
+          input.addEventListener('oe-field-ok', function(evt){
+            expect(evt.detail.fieldId).to.equal('onlyValueChange');
+            setTimeout(done, 2000);
+          });
+          input.set('value', new Date());
         });
       });
 
-      test('holidays Error, if the date value falls on a holiday',function(done){
-        var input = fixture("holiday");
-        flush(function(){
-          assert.equal(input.holidays.length, 2);
-          var holiday = new Date("01-01-2019");
-          input.set('value',holiday);
-          flush(function(){
-            assert.equal(input.invalid, true);
-            assert.equal(input.errorMessage,"dateIsHoliday");
-            done();
-          });
-        }); 
-      });
-    });
+      suite('reference timezone tests', function(){
 
-    suite('date-picker', function () {
+        /* subtracting local tz offset from testing to make sure we endup on different date for testing purpose */
+        let referenceTimezone = (((new Date()).getHours()<12)?-720:720) - ((new Date()).getTimezoneOffset());
+        let refDate = new Date();
 
-      test('tapping date button opens date picker', function (done) {
-        var input = fixture('basic');
-        input.set('dialogAttached',true);
-        flush(function() {
-          var dialog = input.shadowRoot.querySelector('#_picker').$.dialog;
-          assert.equal(getComputedStyle(dialog).display, 'none');
+        refDate.setMinutes(refDate.getMinutes() + (referenceTimezone +((new Date()).getTimezoneOffset())));
+        refDate = new Date(Date.UTC(refDate.getFullYear(), refDate.getMonth(), refDate.getDate()));
+
+        setup(function(){
+          window.OEUtils = window.OEUtils || {};
+          window.OEUtils.componentDefaults = window.OEUtils.componentDefaults || {};
+          window.OEUtils.componentDefaults["oe-date"] = OEUtils.componentDefaults["oe-date"] || {};
+          window.OEUtils.componentDefaults["oe-date"].referenceTimezone = referenceTimezone;
+        });
+        teardown(function(){
+          delete window.OEUtils.componentDefaults["oe-date"].referenceTimezone;
+        });
+
+        test('initial value is populated in business-timezone', function(){
+          let input = fixture('today-DD_MM_Y');
+          expect(input.value).to.deep.equal(refDate);
+        });
+
+        test('shorthand are calculated relative to date in business-timezone', function(){
+          let input = fixture('basic');
+          input.$.display.set('value', '1w');
+          input.inputElement.fire('change');
+
+          let expected = new Date(refDate.getTime());
+          expected.setDate(expected.getDate()+7);
+          expect(input.value).to.deep.equal(expected);
+        });
+
+        test('date dialog shows today in business-timezone by default', function (done) {
+          var input = fixture('basic');
           var btn = input.shadowRoot.querySelector('.date-button');
           MockInteractions.tap(btn);
           flush(function () {
-            assert.notEqual(getComputedStyle(dialog).display, 'none');
+            var dialog = input.shadowRoot.querySelector('#_picker');
+            expect(dialog.localValue).to.deep.equal(refDate);
             done();
           }, 200);
+        });
+
+        test('date picker shows today in business-timezone by default', function (done) {
+        var input = fixture('drop-down');
+        var btn = input.shadowRoot.querySelector('.date-button');
+        MockInteractions.tap(btn);
+        flush(function () {
+          var datePicker = input.shadowRoot.querySelector('#datePicker');
+          expect(input.value).to.not.exist;
+          expect(datePicker.value).to.deep.equal(refDate);
+          done();
         }, 100);
       });
 
+      });
 
-      test('picks up date from date picker', function (done) {
-        var input = fixture('basic');
-        input.set('dialogAttached',true);
-        flush(function() {
-          var picker = input.shadowRoot.querySelector('#_picker');
-          var dialog = picker.$.dialog;
-          assert.equal(getComputedStyle(dialog).display, 'none');
+      suite('reference date tests', function(){
+
+        /* subtracting local tz offset from testing to make sure we endup on different date for testing purpose */
+        let refDate = new Date(Date.UTC(2019, 10, 15));
+
+        setup(function(){
+          window.OEUtils = window.OEUtils || {};
+          window.OEUtils.componentDefaults = window.OEUtils.componentDefaults || {};
+          window.OEUtils.componentDefaults["oe-date"] = OEUtils.componentDefaults["oe-date"] || {};
+          window.OEUtils.componentDefaults["oe-date"].referenceDate = refDate;
+        });
+        teardown(function(){
+          delete window.OEUtils.componentDefaults["oe-date"].referenceDate;
+        });
+
+        test('initial value is populated in business-timezone', function(){
+          let input = fixture('today-DD_MM_Y');
+          expect(input.value).to.deep.equal(refDate);
+        });
+
+        test('shorthand are calculated relative to date in business-timezone', function(){
+          let input = fixture('basic');
+          input.$.display.set('value', '1w');
+          input.inputElement.fire('change');
+
+          let expected = new Date(refDate.getTime());
+          expected.setDate(expected.getDate()+7);
+          expect(input.value).to.deep.equal(expected);
+        });
+
+        test('date dialog shows today in business-timezone by default', function (done) {
+          var input = fixture('basic');
           var btn = input.shadowRoot.querySelector('.date-button');
           MockInteractions.tap(btn);
           flush(function () {
-            assert.notEqual(getComputedStyle(dialog).display, 'none');
-            picker.$.datePicker.value = new Date();
-            picker.addEventListener('oe-date-picked', function (e) { // eslint-disable-line no-unused-vars
-              flush(function () {
-                assert.isDefined(input.value);
-                done();
-              });
-            });
-            MockInteractions.tap(picker.$.okBtn);
+            var dialog = input.shadowRoot.querySelector('#_picker');
+            expect(dialog.localValue).to.deep.equal(refDate);
+            done();
+          }, 200);
+        });
+
+        test('date picker shows today in business-timezone by default', function (done) {
+          var input = fixture('drop-down');
+          var btn = input.shadowRoot.querySelector('.date-button');
+          MockInteractions.tap(btn);
+          flush(function () {
+            var datePicker = input.shadowRoot.querySelector('#datePicker');
+            expect(input.value).to.not.exist;
+            expect(datePicker.value).to.deep.equal(refDate);
+            done();
           }, 100);
-        }, 100);
-      });
-    });
-
-    suite('dropdown-mode', function () {
-      var input;
-      setup(function(done){
-        input = fixture('drop-down');
-        flush(function(){
-          done();
-        })
-      })
-
-      test('tapping date button opens date picker as dropdown', function (done) {
-        var btn = input.shadowRoot.querySelector('.date-button');
-        assert.equal(input.expand, false);
-        MockInteractions.tap(btn);
-        flush(function () {
-          assert.equal(input.expand, true);
-          done();
-        }, 100);
+        });
       });
 
-      test('focusing opens date picker as dropdown', function (done) {
-        var btn = input.shadowRoot.querySelector('.date-button');
-        assert.equal(input.expand, false);
-        input.set('openOnFocus',true);
-        input.$.display.fire('focus');
-        flush(function () {
-          assert.equal(input.expand, true);
-          done();
-        }, 100);
-      });
+      suite('a11y', function () {
 
-      test('picks up date from dropdown date picker', function (done) {
-        var btn = input.shadowRoot.querySelector('.date-button');
-
-        MockInteractions.tap(btn);
-        flush(function () {
-          
-          var datePicker = input.shadowRoot.querySelector('#datePicker');
-          assert.equal(input.expand, true);
-          datePicker.value = new Date();
-          MockInteractions.tap(input.shadowRoot.querySelector('#cancelBtn'));
+        test('has aria-labelledby', function (done) {
+          var input = fixture('has-label');
           flush(function(){
-            assert.equal(input.expand, false);
-            assert.equal(input.value, undefined);
-            MockInteractions.tap(btn);
-            flush(function(){
-              datePicker.value = new Date();
-              MockInteractions.tap(input.shadowRoot.querySelector('#okBtn'));
-              assert.equal(input.value,datePicker.value);
+            assert.isTrue(input.inputElement.inputElement.hasAttribute('aria-labelledby'))
+            assert.equal(input.inputElement.inputElement.getAttribute('aria-labelledby'), getDom(input.$.display.root).querySelector(
+              'label').id, 'aria-labelledby points to the label');
+            done();
+          });
+        });
+
+        test('has aria-describedby for error message', function (done) {
+          var input = fixture('required');
+          flush(function(){
+            assert.isTrue(input.inputElement.inputElement.hasAttribute('aria-describedby'));
+            assert.equal(input.inputElement.inputElement.getAttribute('aria-describedby'), getDom(input.$.display.root).querySelector(
+              'paper-input-error').id, 'aria-describedby points to the error message');
+            done();
+          });
+        });
+
+        test('focus an input with tabindex', function (done) {
+          var input = fixture('has-tabindex');
+          flush(function () {
+            MockInteractions.focus(input);
+            flush(function () {
+              assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
+              document.activeElement, input.$.display);
               done();
             });
           });
-        }, 100);
+        });
       });
+
     });
-
-    suite('a11y', function () {
-
-      test('has aria-labelledby', function (done) {
-        var input = fixture('has-label');
-        flush(function(){
-          assert.isTrue(input.inputElement.inputElement.hasAttribute('aria-labelledby'))
-          assert.equal(input.inputElement.inputElement.getAttribute('aria-labelledby'), getDom(input.$.display.root).querySelector(
-            'label').id, 'aria-labelledby points to the label');
-          done();
-        });
-      });
-
-      test('has aria-describedby for error message', function (done) {
-        var input = fixture('required');
-        flush(function(){
-          assert.isTrue(input.inputElement.inputElement.hasAttribute('aria-describedby'));
-          assert.equal(input.inputElement.inputElement.getAttribute('aria-describedby'), getDom(input.$.display.root).querySelector(
-            'paper-input-error').id, 'aria-describedby points to the error message');
-          done();
-        });
-      });
-
-      test('focus an input with tabindex', function (done) {
-        var input = fixture('has-tabindex');
-        flush(function () {
-          MockInteractions.focus(input);
-          flush(function () {
-            assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
-            document.activeElement, input.$.display);
-            done();
-          });
-        });
-      });
-    });
-
-   
   </script>
 
 </body>

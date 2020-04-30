@@ -8,8 +8,8 @@ import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js";
 import { IronFormElementBehavior } from "@polymer/iron-form-element-behavior/iron-form-element-behavior.js";
 import { OEFieldMixin } from "oe-mixins/oe-field-mixin.js";
-import { OETimeMixin } from "oe-mixins/oe-time-mixin.js";
-import { OEDateMixin } from "oe-mixins/oe-date-mixin.js";
+import { OETimeMixin } from "./oe-time-mixin.js";
+import { OEDateMixin } from "./oe-date-mixin.js";
 import "@polymer/iron-input/iron-input.js";
 import "@polymer/iron-flex-layout/iron-flex-layout.js";
 import "@polymer/iron-flex-layout/iron-flex-layout-classes.js";
@@ -98,7 +98,10 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
                 min-width: 300px;
             }
         </style>
-        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]"></oe-datepicker-dlg>
+        <oe-datepicker-dlg value="{{dateValue}}" id="_picker" max=[[max]] min=[[min]] 
+            disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+            locale="[[locale]]"
+            default-date=[[_resolveReferenceDate(referenceDate,referenceTimezone)]]></oe-datepicker-dlg>
         <paper-input-container id="container" no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
             auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
             <slot name="prefix" slot="prefix"></slot>
@@ -319,7 +322,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
     _focusHandle() { // eslint-disable-line no-unused-vars
         if (this.openOnFocus && this.dropdownMode && !this.expand) {
             this.set('expand', true);
-            this.set('localValue', this.dateValue || new Date());
+            this.set('localValue', this.dateValue || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
         }
     }
 
@@ -331,7 +334,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
      */
     get _focusableElement() {
         return PolymerElement ? this.inputElement._inputElement :
-        this.inputElement;
+            this.inputElement;
     }
 
     /**
@@ -407,7 +410,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
         this.$.container._handleValue(this.$.display);
     }
 
-    static get errorDate(){
+    static get errorDate() {
         return new Date("error");
     }
     /**
@@ -455,7 +458,7 @@ class OeDatetime extends mixinBehaviors([IronFormElementBehavior], PolymerElemen
             if (this.dropdownMode) {
                 if (!this.expand) {
                     this.set('expand', true);
-                    this.set('localValue', this.dateValue || new Date());
+                    this.set('localValue', this.dateValue || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
                 }
             } else {
                 this.$._picker.open();

@@ -9,7 +9,7 @@ import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js";
 import { PaperInputBehavior } from "@polymer/paper-input/paper-input-behavior.js";
 import { IronFormElementBehavior } from "@polymer/iron-form-element-behavior/iron-form-element-behavior.js";
 import { OEFieldMixin } from "oe-mixins/oe-field-mixin.js";
-import { OEDateMixin } from "oe-mixins/oe-date-mixin.js";
+import { OEDateMixin } from "./oe-date-mixin.js";
 import "@polymer/paper-card/paper-card.js";
 import "@polymer/iron-dropdown/iron-dropdown.js";
 import '@polymer/polymer/lib/elements/dom-if.js';
@@ -42,6 +42,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
           padding: 0;
           margin: 0;
           min-width: 0;
+          @apply --oe-date-suffix;
         }
 
         .vertical {
@@ -64,11 +65,18 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         .date-button:focus{
           color: var(--paper-input-container-focus-color, --primary-color);
         }
-  
+        oe-input {
+          @apply --oe-input-date;
+        }
+       
       </style>
       <dom-if if=[[_computeAttachDialog(dropdownMode,dialogAttached)]]>
         <template>
-          <oe-datepicker-dlg value="{{value}}" id="_picker" max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" disabled-days="[[disabledDays]]" holidays="[[holidays]]" locale="[[locale]]" on-oe-date-picked="_datePicked"></oe-datepicker-dlg>
+          <oe-datepicker-dlg value="{{value}}" id="_picker" 
+              max=[[max]] min=[[min]]  start-of-week="[[startOfWeek]]" 
+              disabled-days="[[disabledDays]]" holidays="[[holidays]]" 
+              locale="[[locale]]" on-oe-date-picked="_datePicked"
+              default-date=[[_resolveReferenceDate(referenceDate,referenceTimezone)]]></oe-datepicker-dlg>
         </template>
       </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
@@ -133,11 +141,17 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         value: false
       },
 
+      /**
+       * vertical offset for date picker dropdown
+       */
       verticalOffset: {
         type: String,
         value: 62
       },
 
+      /**
+       * vertical alignment for date picker dropdown
+       */
       verticalAlign: {
         type: String,
         value: 'top'
@@ -152,48 +166,78 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         value: false
       },
 
+      /**
+       * Maximum allowed date (accepts date shorthands)
+       */
       max: {
         type: Object,
         observer: '_maxChanged'
       },
 
+      /**
+       * Minimum allowed date (accepts date shorthands)
+       */
       min: {
         type: Object,
         observer: '_minChanged'
       },
-      
-        disabled: {
-          type: Boolean,
-          value: false
-        },
-        
-        startOfWeek: {
-          type: Number,
-          value: 1
-        },
-        disabledDays: {
-          type: Array
-        },
-
-
 
       /**
-       * Occurs when a date is selected by pressing the Ok button.
+       * flag allows enabling/disabling the control
+       */
+      disabled: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Start of the week for calendar display [0(Sunday)-6(Saturday)]
+       */
+      startOfWeek: {
+        type: Number,
+        value: 1
+      },
+
+      /**
+       * Weekly off days [0(Sunday)-6(Saturday)]
+       */
+      disabledDays: {
+        type: Array
+      },
+
+      /**
+       * control's validity flag
+       */
+      invalid: {
+        type: Boolean,
+        value: false, 
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Fired when a date is selected by pressing the Ok button.
        *
        * @event oe-date-picked
+       */
+
+      /**
+       * Fired when the value is changed by the user.
+       *
+       * @event oe-field-changed
        */
     };
   }
 
-  _computeAttachDialog(dropdownMode,dialogAttached){
+  _computeAttachDialog(dropdownMode, dialogAttached) {
     return !dropdownMode && dialogAttached;
   }
 
-  _computeAttachDropdown(dropdownMode,dropdownAttached){
+  _computeAttachDropdown(dropdownMode, dropdownAttached) {
     return dropdownMode && dropdownAttached;
   }
 
-  constructor(){
+  constructor() {
     super();
     this._hasUserTabIndex = this.hasAttribute('tabindex');
     this.dialogAttached = false;
@@ -205,7 +249,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
   */
   connectedCallback() {
     super.connectedCallback();
-    if(!this._hasUserTabIndex){
+    if (!this._hasUserTabIndex) {
       //Removing the tabindex=0 set by paper-input-behavior 
       //This prevents the focus from moving to the next field in FireFox
       this.removeAttribute('tabindex');
@@ -240,9 +284,13 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
       console.warn("open-on-focus is only available in dropdown-mode.");
     }
 
+    /** oe-input.Iron-Input.inputElement remains undefined 
+     * (looks like _initSlottedInput only for subsequent dom-change) 
+    */
+    this.inputElement._initSlottedInput();
 
   }
-  _forwardFocus(e){
+  _forwardFocus(e) {
     this.$.display.focus();
   }
 
@@ -253,7 +301,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
   }
 
-  
+
   _blurHandle(e) { // eslint-disable-line no-unused-vars
     if (this.openOnFocus && this.dropdownMode) {
       this.set('expand', false);
@@ -285,41 +333,41 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     if (!this.readonly && !this.disabled) {
       if (this.dropdownMode) {
         if (!this.expand && !this.openOnFocus) {
-         this.__expandDropDown();
+          this.__expandDropDown();
         }
       } else {
-        if(!this.dialogAttached){
-          this.set('dialogAttached',true);
-          this.async(function(){
+        if (!this.dialogAttached) {
+          this.set('dialogAttached', true);
+          this.async(function () {
             this.$$('#_picker').open();
-          }.bind(this),0);
-        }else{
+          }.bind(this), 0);
+        } else {
           this.$$('#_picker').open();
         }
       }
     }
   }
 
-  __expandDropDown(){
-    if(!this.dropdownAttached){
-      this.set('dropdownAttached',true);
-      this.async(function(){
+  __expandDropDown() {
+    if (!this.dropdownAttached) {
+      this.set('dropdownAttached', true);
+      this.async(function () {
         this.set('expand', true);
-        this.set('localValue', this.value || new Date());
-      }.bind(this),0);
-    }else{
+        this.set('localValue', this.value || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
+      }.bind(this), 0);
+    } else {
       this.set('expand', true);
-      this.set('localValue', this.value || new Date());
+      this.set('localValue', this.value || this._resolveReferenceDate(this.referenceDate, this.referenceTimezone));
     }
   }
 
-
-
   /**
-   * Validate the date selected
+   * Called when date is selected using dialog
    */
   _datePicked(e) { // eslint-disable-line no-unused-vars
-    this.validate();
+    if(this.fieldId) {
+      this.fire('oe-field-changed', {fieldId: this.fieldId, value: e.detail});      
+    }
   }
 
   // /**
@@ -338,6 +386,9 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     this.set('value', this.localValue);
     this.fire('oe-date-picked', this.value);
     this.set('expand', false);
+    if(this.fieldId) {
+      this.fire('oe-field-changed', {fieldId: this.fieldId, value: this.value});      
+    }
   }
 
   /**
@@ -380,7 +431,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
     }
   }
 
-  
+
 }
 
 window.customElements.define(OeDate.is, OEDateMixin(OEFieldMixin(OeDate)));

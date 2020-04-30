@@ -203,8 +203,12 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
       /**
        * Minimum selectable date
        */
-      min: Date
+      min: Date,
 
+      /**
+       * Default reference date to select when value is not defined
+       */
+      defaultDate: Date
       /**
        * Occurs when a date is selected by pressing the Ok button.
        *
@@ -220,8 +224,11 @@ class OeDatepickerDlg extends LegacyElementMixin(PolymerElement) {
     if (this.value) {
       this.set('localValue', this.value);
     } else {
-      var now = new Date();
-      now = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      var now = this.defaultDate;
+      if(!now){
+        now = new Date();
+        now = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      }
       if (now > this.max) {
         now = this.max;
       } else if (now < this.min) {

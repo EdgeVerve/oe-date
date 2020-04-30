@@ -7,7 +7,7 @@
 import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js";
 import { IronValidatableBehavior } from "@polymer/iron-validatable-behavior/iron-validatable-behavior.js";
-import { OETimeMixin } from "oe-mixins/oe-time-mixin.js";
+import { OETimeMixin } from "./oe-time-mixin.js";
 import "@polymer/iron-input/iron-input.js";
 import "@polymer/iron-flex-layout/iron-flex-layout.js";
 import "@polymer/paper-input/paper-input-container.js";
