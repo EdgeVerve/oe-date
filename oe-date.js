@@ -80,7 +80,7 @@ class OeDate extends mixinBehaviors([IronFormElementBehavior, PaperInputBehavior
         </template>
       </dom-if>
       <oe-input id="display" label=[[label]] required$=[[required]] readonly="[[readonly]]" disabled=[[disabled]] validator=[[validator]] no-label-float=[[noLabelFloat]]
-        invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
+      always-float-label="[[alwaysFloatLabel]]" invalid={{invalid}} value={{_dateValue}} error-message={{errorMessage}} error-placeholders={{errorPlaceholders}} max=[[max]] min=[[min]]>
   
         <paper-button aria-label="clear date from calendar" hidden$=[[!disableTextInput]] slot="suffix" class="suffix-btn" on-tap="_clearDate">
           <iron-icon icon="clear"></iron-icon>
